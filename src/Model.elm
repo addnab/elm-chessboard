@@ -19,7 +19,7 @@ createRank : Rank -> List (Maybe PlayerPiece) -> List Square
 createRank rank pieceOrder =
   List.map2
     (createSquare rank)
-    [ 1, 2, 3, 4, 5, 6, 7, 8 ]
+    [1..8]
     pieceOrder
 
 emptyRank : Rank -> Array.Array Square
