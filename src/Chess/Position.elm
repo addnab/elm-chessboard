@@ -3,9 +3,9 @@ module Chess.Position exposing
   , File, Rank
   )
 
-type File = Int
+type alias File = Int
 
-type Rank = Int
+type alias Rank = Int
 
 type alias Position =
   { file : File

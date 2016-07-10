@@ -1,18 +1,19 @@
-module Model exposing (Model)
+module Model exposing (Model, initial)
 
-import Chess.Board exposing (Board, BoardRow)
-import Chess.Piece exposing (Piece(..))
+import Array as Array
+import Chess.Board exposing (Board)
+import Chess.Pieces exposing (Piece(..), PlayerPiece)
 import Chess.Square exposing (Square)
 import Chess.Position exposing (..)
 import Chess.Players exposing (Player(..))
 
-type Model =
+type alias Model =
   { board : Board
   }
 
 createSquare : Rank -> File -> Maybe PlayerPiece -> Square
 createSquare rank file piece =
-  Square piece { file, rank }
+  Square piece { file = file, rank = rank }
 
 createRank : Rank -> List (Maybe PlayerPiece) -> List Square
 createRank rank pieceOrder =
@@ -21,13 +22,13 @@ createRank rank pieceOrder =
     [ 1, 2, 3, 4, 5, 6, 7, 8 ]
     pieceOrder
 
-emptyRank : Rank -> Array Square
+emptyRank : Rank -> Array.Array Square
 emptyRank rank =
   Array.fromList
     <| createRank rank
     <| List.repeat 8 Nothing
 
-initialFirstRank : Player -> Array Square
+initialFirstRank : Player -> Array.Array Square
 initialFirstRank player =
   let
     playerPieceOrder = List.map (PlayerPiece player) [ R, N, B, K, Q, B, N, R ]
@@ -40,7 +41,7 @@ initialFirstRank player =
       <| createRank rankNumber
       <| List.map Just pieceOrder
 
-initialSecondRank : Player -> Array Square
+initialSecondRank : Player -> Array.Array Square
 initialSecondRank player =
   let
     rankNumber =
