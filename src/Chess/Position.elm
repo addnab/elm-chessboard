@@ -1,13 +1,13 @@
 module Chess.Position exposing
   ( Position
-  , Column, Row
+  , File, Rank
   )
 
-type Column = Int
+type File = Int
 
-type Row = Int
+type Rank = Int
 
 type alias Position =
-  { column : Column
-  , row : Row
+  { file : File
+  , rank : Rank
   }

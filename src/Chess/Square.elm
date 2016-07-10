@@ -1,8 +1,9 @@
 module Chess.Square exposing (Square)
 
-import Chess.Piece exposing (Piece, Position)
+import Chess.Position exposing (Position)
+import Chess.Piece exposing (PlayerPiece)
 
 type alias Square =
-  { piece : Piece
+  { piece : Maybe PlayerPiece
   , position : Position
   }
