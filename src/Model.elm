@@ -31,11 +31,11 @@ emptyRank rank =
 initialFirstRank : Player -> Array.Array Square
 initialFirstRank player =
   let
-    playerPieceOrder = List.map (PlayerPiece player) [ R, N, B, K, Q, B, N, R ]
-    (rankNumber, pieceOrder) =
+    pieceOrder = List.map (PlayerPiece player) [ R, N, B, K, Q, B, N, R ]
+    rankNumber =
       case player of
-        White -> (1, playerPieceOrder)
-        Black -> (8, List.reverse playerPieceOrder)
+        White -> 1
+        Black -> 8
   in
     Array.fromList
       <| createRank rankNumber
