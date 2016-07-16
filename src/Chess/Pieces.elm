@@ -24,11 +24,11 @@ getPieceDisplayInfo playerPieceMaybe =
             B -> "B"
             P -> "P"
           color' = case playerPiece.player of
-            White -> Color.blue
-            Black -> Color.grey
+            White -> "white"
+            Black -> "black"
         in
           (text', color')
       Nothing ->
-        ("", Color.white)
+        ("", "white")
   in
     { text = text, color = color }

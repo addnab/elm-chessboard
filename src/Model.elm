@@ -9,6 +9,7 @@ import Chess.Players exposing (Player(..))
 
 type alias Model =
   { board : Board
+  , selectedSquare: Maybe Square
   }
 
 createSquare : Rank -> File -> Maybe PlayerPiece -> Square
@@ -66,4 +67,5 @@ initial =
       , initialSecondRank Black
       , initialFirstRank Black
       ]
+  , selectedSquare = Nothing
   }

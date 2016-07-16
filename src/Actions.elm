@@ -1,7 +1,7 @@
 module Actions exposing (Action(..))
 
 import Chess.Square exposing (Square)
-import Chess.Position exposting (Position)
+import Chess.Position exposing (Position)
 
 type Action
   = Reset

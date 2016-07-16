@@ -2,64 +2,92 @@ module View exposing (view)
 
 import Html exposing (Html, div, span, text)
 import Html.App as App
+import Html.Attributes exposing (style)
+import Html.Events exposing (onClick)
 import Model exposing (Model)
+import Actions exposing (Action(..))
 import Array as Array
-import Collage
-import Text
 import Color exposing (Color)
 import Chess.Square exposing (Square)
 import Chess.Board exposing (Board)
-import Chess.Pieces exposing (getPieceDisplayInfo)
-import Element
+import Chess.Pieces exposing (PlayerPiece, getPieceDisplayInfo)
 
-main = view Model.initial
+import Debug
 
-renderSquare sideLength square =
+pieceStyle color =
+  let
+    textShadow =
+      if color == "white" then
+        "#000 0px 0px 3px"
+      else
+        "none"
+  in
+    style
+      [ ("font-size", "30px")
+      , ("color", color)
+      , ("text-shadow", textShadow)
+      ]
+
+renderPiece : Maybe PlayerPiece -> Html Action
+renderPiece piece =
+  let
+    pieceDisplayInfo =
+      getPieceDisplayInfo piece
+  in
+    div [ pieceStyle pieceDisplayInfo.color ]
+      [ text pieceDisplayInfo.text ]
+
+squareStyle sideLength color =
+  style
+    [ ("backgroundColor", color)
+    , ("height", toString sideLength ++ "px")
+    , ("width", toString sideLength ++ "px")
+    , ("display", "flex")
+    , ("align-items", "center")
+    , ("justify-content", "center")
+    ]
+
+renderSquare : Int -> Maybe Square -> Square -> Html Action
+renderSquare sideLength selectedSquare square =
   let
     { file, rank } = square.position
-    pieceDisplayInfo =
-      getPieceDisplayInfo square.piece
+    isSelected =
+      case selectedSquare of
+        Just selected ->
+          selected == square
+        Nothing ->
+          False
     color =
-      if (file + rank) % 2 == 0 then
-        Color.white
+      if isSelected then
+        "yellow"
+      else if (file + rank) % 2 == 0 then
+        "white"
       else
-        Color.black
-    xOrg = -sideLength/2 + sideLength/16
-    yOrg = sideLength/2 - sideLength/16
-    xOff = (toFloat (file - 1) * sideLength/8)
-    yOff = (toFloat (rank - 1) * sideLength/8)
-    squareForm =
-      Collage.rect (sideLength/8) (sideLength/8)
-        |> Collage.filled color
-    pieceForm =
-      Text.fromString pieceDisplayInfo.text
-        |> Text.style
-            { typeface = [ "Times New Roman", "serif" ]
-            , height   = Just 40
-            , color    = pieceDisplayInfo.color
-            , bold     = False
-            , italic   = False
-            , line     = Nothing
-            }
-        |> Collage.text
+        "green"
   in
-    [ squareForm, pieceForm ]
-      |> Collage.group
-      |> Collage.move (xOrg + xOff, yOrg - yOff)
+    div [ squareStyle sideLength color, onClick (Select square) ]
+      [ renderPiece square.piece ]
 
-renderRank : Float -> Array.Array Square -> Collage.Form
-renderRank sideLength rank =
+rankStyle sideLength =
+  style
+    [ ("height", toString sideLength ++ "px")
+    , ("display", "flex")
+    ]
+
+renderRank : Int -> Maybe Square -> Array.Array Square -> Html Action
+renderRank sideLength selectedSquare rank =
   rank
-    |> Array.map (renderSquare sideLength)
+    |> Array.map (renderSquare sideLength selectedSquare)
     |> Array.toList
-    |> Collage.group
+    |> div [ rankStyle sideLength ]
 
-renderBoard sideLength board =
+renderBoard : Int -> Maybe Square -> Board -> Html Action
+renderBoard sideLength selectedSquare board =
   board
-    |> Array.map (renderRank (toFloat sideLength))
+    |> Array.map (renderRank sideLength selectedSquare)
     |> Array.toList
-    |> Collage.collage sideLength sideLength
-    |> Element.toHtml
+    |> div []
 
+view : Model -> Html Action
 view model =
-  renderBoard 800 model.board
+  renderBoard 50 model.selectedSquare model.board
