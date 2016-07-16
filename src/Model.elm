@@ -9,7 +9,9 @@ import Chess.Players exposing (Player(..))
 
 type alias Model =
   { board : Board
+  , boardView : Board
   , selectedSquare: Maybe Square
+  , player: Player
   }
 
 createSquare : Int -> Int -> Maybe PlayerPiece -> Square
@@ -56,15 +58,21 @@ initialSecondRank player =
 
 initial : Model
 initial =
-  { board = Dict.fromList
-      [ (1, initialFirstRank White)
-      , (2, initialSecondRank White)
-      , (3, emptyRank 3)
-      , (4, emptyRank 4)
-      , (5, emptyRank 5)
-      , (6, emptyRank 6)
-      , (7, initialSecondRank Black)
-      , (8, initialFirstRank Black)
-      ]
-  , selectedSquare = Nothing
-  }
+  let
+    board =
+      Dict.fromList
+        [ (1, initialFirstRank White)
+        , (2, initialSecondRank White)
+        , (3, emptyRank 3)
+        , (4, emptyRank 4)
+        , (5, emptyRank 5)
+        , (6, emptyRank 6)
+        , (7, initialSecondRank Black)
+        , (8, initialFirstRank Black)
+        ]
+  in
+    { board = board
+    , boardView = board
+    , selectedSquare = Nothing
+    , player = White
+    }

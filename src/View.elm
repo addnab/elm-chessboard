@@ -58,12 +58,16 @@ renderSquare sideLength selectedSquare square =
         Nothing ->
           False
     color =
-      if isSelected then
-        "yellow"
-      else if (file + rank) % 2 == 0 then
-        "white"
-      else
-        "green"
+      case square.highlightColor of
+        Just highlightColor ->
+          highlightColor
+        Nothing ->
+          if isSelected then
+            "yellow"
+          else if (file + rank) % 2 == 0 then
+            "white"
+          else
+            "green"
   in
     div [ squareStyle sideLength color, onClick (Select square) ]
       [ renderPiece square.piece ]
@@ -90,4 +94,4 @@ renderBoard sideLength selectedSquare board =
 
 view : Model -> Html Action
 view model =
-  renderBoard 50 model.selectedSquare model.board
+  renderBoard 50 model.selectedSquare model.boardView
