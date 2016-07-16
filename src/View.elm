@@ -96,17 +96,15 @@ rankStyle sideLength =
 
 renderRank : Int -> Maybe Square -> Rank -> Html Action
 renderRank sideLength selectedSquare rank =
-  rank
-    |> Dict.values
-    |> List.map (renderSquare sideLength selectedSquare)
-    |> div [ rankStyle sideLength ]
+  div [ rankStyle sideLength ]
+    <| List.map (renderSquare sideLength selectedSquare)
+      <| Dict.values rank
 
 renderBoard : Int -> Maybe Square -> Board -> Html Action
 renderBoard sideLength selectedSquare board =
-  board
-    |> Dict.values
-    |> List.map (renderRank sideLength selectedSquare)
-    |> div []
+  div []
+    <| List.map (renderRank sideLength selectedSquare)
+      <| Dict.values board
 
 view : Model -> Html Action
 view model =
