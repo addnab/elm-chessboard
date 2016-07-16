@@ -8,7 +8,8 @@ update : Action -> Model -> Model
 update action model =
   case action of
     Select square ->
-      { model | selectedSquare = Just square }
+      { model | selectedSquare = Just square
+      }
     Move square position ->
       model
     Reset ->

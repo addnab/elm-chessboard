@@ -1,7 +1,7 @@
 module Model exposing (Model, initial)
 
 import Dict
-import Chess.Board exposing (Board)
+import Chess.Board exposing (Board, Rank)
 import Chess.Pieces exposing (Piece(..), PlayerPiece)
 import Chess.Square exposing (Square)
 import Chess.Position exposing (..)
@@ -12,23 +12,23 @@ type alias Model =
   , selectedSquare: Maybe Square
   }
 
-createSquare : Rank -> File -> Maybe PlayerPiece -> Square
+createSquare : Int -> Int -> Maybe PlayerPiece -> Square
 createSquare rank file piece =
   Square piece { file = file, rank = rank } Nothing
 
-createRank : Rank -> List (Maybe PlayerPiece) -> Dict.Dict Int Square
+createRank : Int -> List (Maybe PlayerPiece) -> Rank
 createRank rank pieceOrder =
   pieceOrder
     |> List.map2 (createSquare rank) [1..8]
     |> List.map2 (,) [1..8]
     |> Dict.fromList
 
-emptyRank : Rank -> Dict.Dict Int Square
+emptyRank : Int -> Rank
 emptyRank rank =
   List.repeat 8 Nothing
     |> createRank rank
 
-initialFirstRank : Player -> Dict.Dict Int Square
+initialFirstRank : Player -> Rank
 initialFirstRank player =
   let
     pieceOrder = List.map (PlayerPiece player) [ R, N, B, K, Q, B, N, R ]
@@ -41,7 +41,7 @@ initialFirstRank player =
       |> List.map Just
       |> createRank rank
 
-initialSecondRank : Player -> Dict.Dict Int Square
+initialSecondRank : Player -> Rank
 initialSecondRank player =
   let
     rank =

@@ -9,7 +9,7 @@ import Actions exposing (Action(..))
 import Dict
 import Color exposing (Color)
 import Chess.Square exposing (Square)
-import Chess.Board exposing (Board)
+import Chess.Board exposing (Board, Rank)
 import Chess.Pieces exposing (PlayerPiece, getPieceDisplayInfo)
 
 import Debug
@@ -74,7 +74,7 @@ rankStyle sideLength =
     , ("display", "flex")
     ]
 
-renderRank : Int -> Maybe Square -> Dict.Dict Int Square -> Html Action
+renderRank : Int -> Maybe Square -> Rank -> Html Action
 renderRank sideLength selectedSquare rank =
   rank
     |> Dict.values

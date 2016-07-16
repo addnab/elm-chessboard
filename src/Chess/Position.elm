@@ -1,10 +1,6 @@
-module Chess.Position exposing (Position, File, Rank)
-
-type alias File = Int
-
-type alias Rank = Int
+module Chess.Position exposing (Position)
 
 type alias Position =
-  { file : File
-  , rank : Rank
+  { file : Int
+  , rank : Int
   }
