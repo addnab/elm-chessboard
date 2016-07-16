@@ -20,22 +20,24 @@ getPawnNextMovePositions player position =
     else
       nextMoves
 
-getNextMovePositions : Square -> List Position
-getNextMovePositions square =
+getNextMovePositions : Player -> Square -> List Position
+getNextMovePositions player square =
   case square.piece of
     Just playerPiece ->
-      case playerPiece.piece of
-        K ->
-          []
-        Q ->
-          []
-        R ->
-          []
-        N ->
-          []
-        B ->
-          []
-        P ->
-          getPawnNextMovePositions playerPiece.player square.position
+      if playerPiece.player == player then
+        case playerPiece.piece of
+          K ->
+            []
+          Q ->
+            []
+          R ->
+            []
+          N ->
+            []
+          B ->
+            []
+          P ->
+            getPawnNextMovePositions playerPiece.player square.position
+      else []
     Nothing ->
       []

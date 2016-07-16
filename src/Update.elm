@@ -3,6 +3,7 @@ module Update exposing (update)
 import Chess.Board exposing (getBoardViewForNextMoves, movePiece)
 import Model exposing (Model)
 import Actions exposing (Action(..))
+import Chess.Players exposing (opponent)
 import Debug
 
 update : Action -> Model -> Model
@@ -26,6 +27,7 @@ update action model =
         { model
         | board = board
         , boardView = board
+        , player = opponent model.player
         }
     Reset ->
       model

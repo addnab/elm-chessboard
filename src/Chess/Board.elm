@@ -40,7 +40,7 @@ highlightSquare player square =
 getBoardViewForNextMoves : Player -> Square -> Board -> Board
 getBoardViewForNextMoves player square board =
   let
-    nextMoves = getNextMovePositions square
+    nextMoves = getNextMovePositions player square
   in
     nextMoves
       |> List.foldr (updateSquare (highlightSquare player)) board
