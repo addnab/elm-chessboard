@@ -7,3 +7,4 @@ type Action
   = Reset
   | Move Square Position
   | Select Square
+  | Deselect

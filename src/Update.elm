@@ -1,6 +1,6 @@
 module Update exposing (update)
 
-import Chess.Board exposing (getBoardViewForNextMoves)
+import Chess.Board exposing (getBoardViewForNextMoves, movePiece)
 import Model exposing (Model)
 import Actions exposing (Action(..))
 import Debug
@@ -17,7 +17,15 @@ update action model =
             model.board
       , selectedSquare = Just square
       }
+    Deselect ->
+      { model | selectedSquare = Nothing }
     Move square position ->
-      model
+      let
+        board = movePiece square position model.board
+      in
+        { model
+        | board = board
+        , boardView = board
+        }
     Reset ->
       model
