@@ -1,7 +1,4 @@
-module Chess.Position exposing
-  ( Position
-  , File, Rank
-  )
+module Chess.Position exposing (Position, File, Rank)
 
 type alias File = Int
 

@@ -1,6 +1,6 @@
 module Model exposing (Model, initial)
 
-import Array as Array
+import Dict
 import Chess.Board exposing (Board)
 import Chess.Pieces exposing (Piece(..), PlayerPiece)
 import Chess.Square exposing (Square)
@@ -14,7 +14,7 @@ type alias Model =
 
 createSquare : Rank -> File -> Maybe PlayerPiece -> Square
 createSquare rank file piece =
-  Square piece { file = file, rank = rank }
+  Square piece { file = file, rank = rank } Nothing
 
 createRank : Rank -> List (Maybe PlayerPiece) -> List Square
 createRank rank pieceOrder =
@@ -23,13 +23,14 @@ createRank rank pieceOrder =
     [1..8]
     pieceOrder
 
-emptyRank : Rank -> Array.Array Square
+emptyRank : Rank -> Dict.Dict Int Square
 emptyRank rank =
-  Array.fromList
-    <| createRank rank
-    <| List.repeat 8 Nothing
+  Dict.fromList
+    <| List.map2 (,) [1..8]
+      <| createRank rank
+        <| List.repeat 8 Nothing
 
-initialFirstRank : Player -> Array.Array Square
+initialFirstRank : Player -> Dict.Dict Int Square
 initialFirstRank player =
   let
     pieceOrder = List.map (PlayerPiece player) [ R, N, B, K, Q, B, N, R ]
@@ -38,11 +39,12 @@ initialFirstRank player =
         White -> 1
         Black -> 8
   in
-    Array.fromList
-      <| createRank rankNumber
-      <| List.map Just pieceOrder
+    Dict.fromList
+      <| List.map2 (,) [1..8]
+        <| createRank rankNumber
+          <| List.map Just pieceOrder
 
-initialSecondRank : Player -> Array.Array Square
+initialSecondRank : Player -> Dict.Dict Int Square
 initialSecondRank player =
   let
     rankNumber =
@@ -51,21 +53,22 @@ initialSecondRank player =
         Black -> 7
     pieceOrder = List.map (PlayerPiece player) [ P, P, P, P, P, P, P, P ]
   in
-    Array.fromList
-      <| createRank rankNumber
-      <| List.map Just pieceOrder
+    Dict.fromList
+      <| List.map2 (,) [1..8]
+        <| createRank rankNumber
+          <| List.map Just pieceOrder
 
 initial : Model
 initial =
-  { board = Array.fromList
-      [ initialFirstRank White
-      , initialSecondRank White
-      , emptyRank 3
-      , emptyRank 4
-      , emptyRank 5
-      , emptyRank 6
-      , initialSecondRank Black
-      , initialFirstRank Black
+  { board = Dict.fromList
+      [ (1, initialFirstRank White)
+      , (2, initialSecondRank White)
+      , (3, emptyRank 3)
+      , (4, emptyRank 4)
+      , (5, emptyRank 5)
+      , (6, emptyRank 6)
+      , (7, initialSecondRank Black)
+      , (8, initialFirstRank Black)
       ]
   , selectedSquare = Nothing
   }

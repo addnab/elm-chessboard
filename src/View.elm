@@ -6,7 +6,7 @@ import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 import Model exposing (Model)
 import Actions exposing (Action(..))
-import Array as Array
+import Dict
 import Color exposing (Color)
 import Chess.Square exposing (Square)
 import Chess.Board exposing (Board)
@@ -74,18 +74,18 @@ rankStyle sideLength =
     , ("display", "flex")
     ]
 
-renderRank : Int -> Maybe Square -> Array.Array Square -> Html Action
+renderRank : Int -> Maybe Square -> Dict.Dict Int Square -> Html Action
 renderRank sideLength selectedSquare rank =
   rank
-    |> Array.map (renderSquare sideLength selectedSquare)
-    |> Array.toList
+    |> Dict.values
+    |> List.map (renderSquare sideLength selectedSquare)
     |> div [ rankStyle sideLength ]
 
 renderBoard : Int -> Maybe Square -> Board -> Html Action
 renderBoard sideLength selectedSquare board =
   board
-    |> Array.map (renderRank sideLength selectedSquare)
-    |> Array.toList
+    |> Dict.values
+    |> List.map (renderRank sideLength selectedSquare)
     |> div []
 
 view : Model -> Html Action

@@ -6,4 +6,5 @@ import Chess.Pieces exposing (PlayerPiece)
 type alias Square =
   { piece : Maybe PlayerPiece
   , position : Position
+  , highlightColor: Maybe String
   }

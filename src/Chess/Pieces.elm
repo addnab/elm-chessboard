@@ -1,7 +1,7 @@
 module Chess.Pieces exposing (PlayerPiece, Piece(..), getPieceDisplayInfo)
 
 import Chess.Players exposing (Player(..))
-
+import Chess.Position exposing (Position)
 import Color exposing (Color)
 
 type Piece = K | Q | R | N | B | P

@@ -1,8 +1,7 @@
 module Update exposing (update)
 
 import Model exposing (Model)
-import Actions exposing (..)
-
+import Actions exposing (Action(..))
 import Debug
 
 update : Action -> Model -> Model
