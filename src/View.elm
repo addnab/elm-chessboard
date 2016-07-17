@@ -57,7 +57,7 @@ squareSelectAction fromSquareMaybe toSquare =
         Movable ->
           Move fromSquare toSquare.position
         Capturable ->
-          Deselect
+          Move fromSquare toSquare.position
         None ->
           Select toSquare
 

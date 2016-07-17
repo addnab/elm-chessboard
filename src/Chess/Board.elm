@@ -66,6 +66,11 @@ removePiece position board =
   in
     (newBoard, piece)
 
-movePiece : Square -> Position -> Board -> Board
-movePiece fromSquare toPosition =
-  (removePiece fromSquare.position) >> (setPiece toPosition)
+movePiece : Square -> Position -> Board -> { board: Board, capturedPiece: Maybe PlayerPiece }
+movePiece fromSquare toPosition board =
+  { board =
+      board
+        |> (removePiece fromSquare.position) >> (setPiece toPosition)
+  , capturedPiece =
+      getPiece toPosition board
+  }

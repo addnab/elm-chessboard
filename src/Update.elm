@@ -22,7 +22,7 @@ update action model =
       { model | selectedSquare = Nothing }
     Move square position ->
       let
-        board = movePiece square position model.board
+        { board, capturedPiece } = movePiece square position model.board
       in
         { model
         | board = board
