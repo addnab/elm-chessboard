@@ -1,4 +1,4 @@
-module Chess.Board exposing (Board, Rank, getBoardViewForNextMoves, movePiece)
+module Chess.Board exposing (Board, Rank, movePiece, getPiece, updateSquare)
 
 import Dict as Dict
 import Maybe exposing (andThen, map)
@@ -6,7 +6,6 @@ import Chess.Square exposing (Square, MoveState(..))
 import Chess.Position exposing (Position)
 import Chess.Players exposing (Player(..))
 import Chess.Pieces exposing (Piece(..), PlayerPiece)
-import Chess.Moves exposing (getNextMovePositions)
 
 import Debug
 
@@ -22,29 +21,6 @@ updateSquare squareModifier position =
         <| Maybe.map
           <| squareModifier
 
-highlightSquare : Player -> Square -> Square
-highlightSquare player square =
-  let
-    moveState =
-      case square.piece of
-        Nothing ->
-          Movable
-        Just playerPiece ->
-          if playerPiece.player == player then
-            None
-          else
-            Capturable
-  in
-    { square | moveState = moveState }
-
-getBoardViewForNextMoves : Player -> Square -> Board -> Board
-getBoardViewForNextMoves player square board =
-  let
-    nextMoves = getNextMovePositions player square
-  in
-    nextMoves
-      |> List.foldr (updateSquare (highlightSquare player)) board
-
 getPiece : Position -> Board -> Maybe PlayerPiece
 getPiece position board =
   (Dict.get position.rank board)
@@ -53,10 +29,16 @@ getPiece position board =
 
 setPiece : Position -> (Board, Maybe PlayerPiece) -> Board
 setPiece position (board, piece) =
-  updateSquare
-    (\square -> { square | piece = piece })
-    position
-    board
+  let
+    movedPiece =
+      Maybe.map
+        (\playerPiece -> { playerPiece | moved = True })
+        piece
+  in
+    updateSquare
+      (\square -> { square | piece = movedPiece })
+      position
+      board
 
 removePiece : Position -> Board -> (Board, Maybe PlayerPiece)
 removePiece position board =
