@@ -103,11 +103,11 @@ kingMoves playerPiece position board =
 pawnMoves : PlayerPiece -> Position -> Board -> List Move
 pawnMoves playerPiece position board =
   let
-    firstMoves =
+    forwardMoves =
       if not playerPiece.moved then
-        pieceMoves playerPiece position board (Just 1) [ Direction 0 2 ]
+        pieceMoves playerPiece position board (Just 2) [ n ]
       else
-        []
+        pieceMoves playerPiece position board (Just 1) [ n ]
     isCapture move =
       case move of
         Capture _
@@ -118,7 +118,7 @@ pawnMoves playerPiece position board =
       pieceMoves playerPiece position board (Just 1) [ ne, nw ]
         |> List.filter isCapture
     normalMoves =
-      firstMoves ++ pieceMoves playerPiece position board (Just 1) [ n ]
+      forwardMoves
         |> List.filter (isCapture >> not)
   in
     normalMoves ++ captureMoves
