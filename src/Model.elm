@@ -3,7 +3,7 @@ module Model exposing (Model, initial)
 import Dict
 import Chess.Board exposing (Board, Rank)
 import Chess.Pieces exposing (Piece(..), PlayerPiece)
-import Chess.Square exposing (Square, MoveState(..))
+import Chess.Square exposing (Square, Highlight(..))
 import Chess.Position exposing (..)
 import Chess.Players exposing (Player(..))
 
@@ -33,7 +33,7 @@ emptyRank rank =
 initialFirstRank : Player -> Rank
 initialFirstRank player =
   let
-    pieceOrder = List.map (PlayerPiece player) [ R, N, B, K, Q, B, N, R ]
+    pieceOrder = List.map (PlayerPiece player False) [ R, N, B, K, Q, B, N, R ]
     rank =
       case player of
         White -> 1
@@ -50,7 +50,7 @@ initialSecondRank player =
       case player of
         White -> 2
         Black -> 7
-    pieceOrder = List.map (PlayerPiece player) [ P, P, P, P, P, P, P, P ]
+    pieceOrder = List.map (PlayerPiece player False) [ P, P, P, P, P, P, P, P ]
   in
     pieceOrder
       |> List.map Just

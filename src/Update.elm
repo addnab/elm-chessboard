@@ -1,6 +1,7 @@
 module Update exposing (update)
 
-import Chess.Board exposing (getBoardViewForNextMoves, movePiece)
+import Chess.Moves exposing (getBoardViewForNextMoves)
+import Chess.Board exposing (movePiece)
 import Model exposing (Model)
 import Actions exposing (Action(..))
 import Chess.Players exposing (opponent)

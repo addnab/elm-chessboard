@@ -1,10 +1,11 @@
-module Chess.Moves exposing (getBoardViewForNextMoves, toPosition)
+module Chess.Moves exposing (getBoardViewForNextMoves)
 
-import Chess.Square exposing (Square, MoveState(..))
+import Dict
+import Chess.Square exposing (Square, highlightSquare)
 import Chess.Position exposing (Position)
 import Chess.Players exposing (Player(..), opponent)
 import Chess.Pieces exposing (Piece(..), PlayerPiece)
-import Chess.Board exposing (Board, getPiece)
+import Chess.Board exposing (Board, getPiece, updateSquare)
 
 type alias Direction =
   { x : Int
@@ -13,29 +14,21 @@ type alias Direction =
 
 type Move = Capture Position | Goto Position
 
-toPosition : Move -> Position
-toPosition move =
-  case move of
-    Capture pos ->
-      pos
-    Goto pos ->
-      pos
-
-n  = Direction +0 +1
-s  = Direction +0 -1
-w  = Direction +1 +0
-e  = Direction -1 +0
-nw = Direction +1 +1
-ne = Direction -1 +1
-sw = Direction +1 -1
+n  = Direction  0  1
+s  = Direction  0 -1
+w  = Direction  1  0
+e  = Direction -1  0
+nw = Direction  1  1
+ne = Direction -1  1
+sw = Direction  1 -1
 se = Direction -1 -1
 
-movesByDirection : PlayerPiece -> Board -> Position -> Int -> Direction -> List Move
+movesByDirection : PlayerPiece -> Board -> Position -> Maybe Int -> Direction -> List Move
 movesByDirection playerPiece board position maxHopCount direction =
   let
     playerDirectionMultiplier =
-      case playerPiece.player ->
-        White -> +1
+      case playerPiece.player of
+        White ->  1
         Black -> -1
     newPosition =
       { position
@@ -46,7 +39,7 @@ movesByDirection playerPiece board position maxHopCount direction =
     validPosition =
       newPosition.file >= 1 && newPosition.file <= 8
         && newPosition.rank >= 1 && newPosition.rank <= 8
-    hopCount = Maybe.withDefault 8 hopCountMaybe
+    hopCount = Maybe.withDefault 8 maxHopCount
   in
     if hopCount > 0 && validPosition then
       case nextPlayerPieceMaybe of
@@ -57,15 +50,15 @@ movesByDirection playerPiece board position maxHopCount direction =
             [ Capture newPosition ]
         Nothing ->
           (Goto newPosition)
-            :: moves playerPiece board newPosition (hopCount - 1) direction
+            :: movesByDirection playerPiece board newPosition (Just (hopCount - 1)) direction
     else
       []
 
 pieceMoves : PlayerPiece -> Position -> Board -> Maybe Int -> List Direction -> List Move
 pieceMoves playerPiece position board hopCountMaybe directions =
   List.foldr
-    ( \positions direction ->
-        movesByDirection playerPiece board position hopCountMaybe direction ++ positions
+    ( \direction positions ->
+        (movesByDirection playerPiece board position hopCountMaybe direction) ++ positions
     )
   [] directions
 
@@ -80,16 +73,16 @@ knightMoves : PlayerPiece -> Position -> Board -> List Move
 knightMoves playerPiece position board =
   let
     directions =
-      [ Direction +1 +2, Direction +2 +1
-      , Direction +1 +2, Direction +2 -1
-      , Direction -1 +2, Direction -2 +1
+      [ Direction  1  2, Direction  2  1
+      , Direction  1 -2, Direction  2 -1
+      , Direction -1  2, Direction -2  1
       , Direction -1 -2, Direction -2 -1
       ]
   in
     pieceMoves playerPiece position board (Just 1) directions
 
-bishopMoves : Player -> Position -> Board -> List Move
-bishopMoves player position board =
+bishopMoves : PlayerPiece -> Position -> Board -> List Move
+bishopMoves playerPiece position board =
   let
     directions = [ ne, nw, se, sw ]
   in
@@ -105,7 +98,7 @@ kingMoves playerPiece position board =
   let
     directions = [ n, s, e, w, ne, nw, se, sw ]
   in
-    pieceMoves playerPiece position board Nothing directions
+    pieceMoves playerPiece position board (Just 1) directions
 
 pawnMoves : PlayerPiece -> Position -> Board -> List Move
 pawnMoves playerPiece position board =
@@ -124,9 +117,11 @@ pawnMoves playerPiece position board =
     captureMoves =
       pieceMoves playerPiece position board (Just 1) [ ne, nw ]
         |> List.filter isCapture
-    normalMoves = pieceMoves playerPiece position board (Just 1) [ n ]
+    normalMoves =
+      firstMoves ++ pieceMoves playerPiece position board (Just 1) [ n ]
+        |> List.filter (isCapture >> not)
   in
-    normalMoves ++ firstMoves ++ captureMoves
+    normalMoves ++ captureMoves
 
 getNextMoves : Player -> Square -> Board -> List Move
 getNextMoves player square board =
@@ -143,32 +138,25 @@ getNextMoves player square board =
               B -> bishopMoves
               P -> pawnMoves
         in
-          getPieceMoves playerPiece position board
+          getPieceMoves playerPiece square.position board
       else []
     Nothing ->
       []
 
-highlightSquare : Player -> Square -> Square
-highlightSquare player square =
-  let
-    moveState =
-      case square.piece of
-        Nothing ->
-          Movable
-        Just playerPiece ->
-          if playerPiece.player == player then
-            None
-          else
-            Capturable
-  in
-    { square | moveState = moveState }
+toPosition : Move -> Position
+toPosition move =
+  case move of
+    Capture pos ->
+      pos
+    Goto pos ->
+      pos
 
 getBoardViewForNextMoves : Player -> Square -> Board -> Board
 getBoardViewForNextMoves player square board =
   let
     nextMoves =
       getNextMoves player square board
-        |> List.map Move.toPosition
+        |> List.map toPosition
   in
     nextMoves
       |> List.foldr (updateSquare (highlightSquare player)) board

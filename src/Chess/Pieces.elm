@@ -8,8 +8,8 @@ type Piece = K | Q | R | N | B | P
 
 type alias PlayerPiece =
   { player : Player
+  , moved : Bool
   , piece : Piece
-  , moved : Boolean
   }
 
 getPieceDisplayInfo playerPieceMaybe =

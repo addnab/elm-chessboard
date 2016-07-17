@@ -8,7 +8,7 @@ import Model exposing (Model)
 import Actions exposing (Action(..))
 import Dict
 import Color exposing (Color)
-import Chess.Square exposing (Square, MoveState(..))
+import Chess.Square exposing (Square, Highlight(..))
 import Chess.Board exposing (Board, Rank)
 import Chess.Pieces exposing (PlayerPiece, getPieceDisplayInfo)
 
@@ -53,7 +53,7 @@ squareSelectAction fromSquareMaybe toSquare =
     Nothing ->
       Select toSquare
     Just fromSquare ->
-      case toSquare.moveState of
+      case toSquare.highlight of
         Movable ->
           Move fromSquare toSquare.position
         Capturable ->
@@ -72,7 +72,7 @@ renderSquare sideLength selectedSquare square =
         Nothing ->
           False
     color =
-      case square.moveState of
+      case square.highlight of
         Movable ->
           "grey"
         Capturable ->

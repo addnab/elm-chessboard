@@ -1,8 +1,7 @@
 module Chess.Board exposing (Board, Rank, movePiece, getPiece, updateSquare)
 
 import Dict as Dict
-import Maybe exposing (andThen, map)
-import Chess.Square exposing (Square, MoveState(..))
+import Chess.Square exposing (Square, Highlight(..))
 import Chess.Position exposing (Position)
 import Chess.Players exposing (Player(..))
 import Chess.Pieces exposing (Piece(..), PlayerPiece)
@@ -24,8 +23,8 @@ updateSquare squareModifier position =
 getPiece : Position -> Board -> Maybe PlayerPiece
 getPiece position board =
   (Dict.get position.rank board)
-    `andThen` (Dict.get position.file)
-      `andThen` .piece
+    `Maybe.andThen` (Dict.get position.file)
+      `Maybe.andThen` .piece
 
 setPiece : Position -> (Board, Maybe PlayerPiece) -> Board
 setPiece position (board, piece) =
