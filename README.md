@@ -15,6 +15,7 @@ A personal pet project to try out [The Elm Architecture](http://guide.elm-lang.o
 - Rules to implement
   - ~~Basic moves for all pieces~~
   - Enpassant
+  - Promotion
   - Castling
   - Handling King Check
 - Better Styling
