@@ -1,4 +1,4 @@
-module Chess.Pieces exposing (PlayerPiece, Piece(..), getPieceDisplayInfo)
+module Chess.Pieces exposing (PlayerPiece, Piece(..), getPieceDisplayInfo, toPlayerPiece)
 
 import Chess.Players exposing (Player(..))
 import Chess.Position exposing (Position)
@@ -10,6 +10,13 @@ type alias PlayerPiece =
   { player : Player
   , moved : Bool
   , piece : Piece
+  }
+
+toPlayerPiece : Player -> Piece -> PlayerPiece
+toPlayerPiece player piece =
+  { player = player
+  , piece = piece
+  , moved = False
   }
 
 getPieceDisplayInfo playerPieceMaybe =

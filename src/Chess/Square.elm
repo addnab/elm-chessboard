@@ -9,7 +9,7 @@ type Highlight = Movable | Capturable | None
 type alias Square =
   { piece : Maybe PlayerPiece
   , position : Position
-  , highlight: Highlight
+  , highlight : Highlight
   }
 
 highlightSquare : Player -> Square -> Square

@@ -1,10 +1,10 @@
 module Update exposing (update)
 
-import Chess.Moves exposing (getBoardViewForNextMoves)
+import Chess.Moves exposing (getBoardViewForNextMoves, isKingInCheck)
 import Chess.Board exposing (movePiece)
 import Model exposing (Model)
 import Actions exposing (Action(..))
-import Chess.Players exposing (opponent)
+import Chess.Players exposing (opponent, getPlayerInfo)
 import Debug
 
 update : Action -> Model -> Model
@@ -14,7 +14,8 @@ update action model =
       { model
       | boardView =
           getBoardViewForNextMoves
-            model.player
+            model.playerInTurn
+            (getPlayerInfo model.playerInTurn model.players)
             square
             model.board
       , selectedSquare = Just square
@@ -24,11 +25,17 @@ update action model =
     Move square position ->
       let
         { board, capturedPiece } = movePiece square position model.board
+        kingCheck = Debug.log "" (
+          isKingInCheck
+            (opponent model.playerInTurn)
+            (getPlayerInfo (opponent model.playerInTurn) model.players).kingPosition
+            board
+        )
       in
         { model
         | board = board
         , boardView = board
-        , player = opponent model.player
+        , playerInTurn = opponent model.playerInTurn
         }
     Reset ->
       model

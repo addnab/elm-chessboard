@@ -5,13 +5,17 @@ import Chess.Board exposing (Board, Rank)
 import Chess.Pieces exposing (Piece(..), PlayerPiece)
 import Chess.Square exposing (Square, Highlight(..))
 import Chess.Position exposing (..)
-import Chess.Players exposing (Player(..))
+import Chess.Players exposing (Player(..), PlayerInfo, playerInit)
 
 type alias Model =
   { board : Board
   , boardView : Board
-  , selectedSquare: Maybe Square
-  , player: Player
+  , selectedSquare : Maybe Square
+  , playerInTurn : Player
+  , players :
+      { white : PlayerInfo
+      , black : PlayerInfo
+      }
   }
 
 createSquare : Int -> Int -> Maybe PlayerPiece -> Square
@@ -74,5 +78,9 @@ initial =
     { board = board
     , boardView = board
     , selectedSquare = Nothing
-    , player = White
+    , playerInTurn = White
+    , players =
+        { white = playerInit (Position 4 1)
+        , black = playerInit (Position 4 8)
+        }
     }
