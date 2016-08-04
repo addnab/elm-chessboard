@@ -19,24 +19,23 @@ toPlayerPiece player piece =
   , moved = False
   }
 
-getPieceDisplayInfo playerPieceMaybe =
+getImageName : PlayerPiece -> String
+getImageName playerPiece =
   let
-    (text, color) = case playerPieceMaybe of
-      Just playerPiece ->
-        let
-          text' = case playerPiece.piece of
-            K -> "K"
-            Q -> "Q"
-            R -> "R"
-            N -> "N"
-            B -> "B"
-            P -> "P"
-          color' = case playerPiece.player of
-            White -> "white"
-            Black -> "black"
-        in
-          (text', color')
-      Nothing ->
-        ("", "white")
+    color = case playerPiece.player of
+        White -> "W"
+        Black -> "B"
+    piece  =
+      case playerPiece.piece of
+        K -> "K"
+        Q -> "Q"
+        B -> "B"
+        N -> "N"
+        R -> "R"
+        P -> "P"
   in
-    { text = text, color = color }
+    color ++ "_" ++ piece ++ ".png"
+
+getPieceDisplayInfo : Maybe PlayerPiece -> Maybe String
+getPieceDisplayInfo playerPieceMaybe =
+    Maybe.map getImageName playerPieceMaybe

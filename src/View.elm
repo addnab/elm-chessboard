@@ -1,8 +1,8 @@
 module View exposing (view)
 
-import Html exposing (Html, div, span, text)
+import Html exposing (Html, div, span, text, img)
 import Html.App as App
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (style, src, width, height)
 import Html.Events exposing (onClick)
 import Model exposing (Model)
 import Actions exposing (Action(..))
@@ -28,23 +28,37 @@ pieceStyle color =
       , ("text-shadow", textShadow)
       ]
 
-renderPiece : Maybe PlayerPiece -> Html Action
-renderPiece piece =
+renderPiece : Int -> Maybe PlayerPiece -> Html Action
+renderPiece sideLength piece =
   let
     pieceDisplayInfo =
       getPieceDisplayInfo piece
+    pieceStyle =
+      [ ("z-index", "1")
+      , ("position", "absolute")
+      ]
   in
-    div [ pieceStyle pieceDisplayInfo.color ]
-      [ text pieceDisplayInfo.text ]
+    case pieceDisplayInfo of
+      Just imageName ->
+        img [ style pieceStyle, src ("../assets/" ++ imageName), width sideLength, height sideLength]
+            []
+      Nothing ->
+        div [] []
 
 squareStyle sideLength color =
   style
     [ ("backgroundColor", color)
     , ("height", toString sideLength ++ "px")
     , ("width", toString sideLength ++ "px")
-    , ("display", "flex")
-    , ("align-items", "center")
-    , ("justify-content", "center")
+    ]
+
+hightlightStyle sideLength hightlightColor =
+  style
+    [ ("backgroundColor", (Debug.log "color" hightlightColor))
+    , ("opacity", "0.9")
+    , ("position", "absolute")
+    , ("width", toString sideLength ++ "px")
+    , ("height", toString sideLength ++ "px")
     ]
 
 squareSelectAction : Maybe Square -> Square -> Action
@@ -71,7 +85,7 @@ renderSquare sideLength selectedSquare square =
           selected == square
         Nothing ->
           False
-    color =
+    highlightColor =
       case square.highlight of
         Movable ->
           "grey"
@@ -80,13 +94,19 @@ renderSquare sideLength selectedSquare square =
         None ->
           if isSelected then
             "yellow"
-          else if (file + rank) % 2 == 0 then
-            "white"
           else
-            "green"
+            ""
+
+    baseColor =
+      if (file + rank) % 2 == 0 then
+        "white"
+      else
+        "green"
   in
-    div [ squareStyle sideLength color, onClick (squareSelectAction selectedSquare square) ]
-      [ renderPiece square.piece ]
+    div [ squareStyle sideLength baseColor, onClick (squareSelectAction selectedSquare square) ]
+      [ div [ hightlightStyle sideLength highlightColor ] []
+      , renderPiece sideLength square.piece
+      ]
 
 rankStyle sideLength =
   style
