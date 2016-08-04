@@ -40,7 +40,7 @@ renderPiece sideLength piece =
   in
     case pieceDisplayInfo of
       Just imageName ->
-        img [ style pieceStyle, src ("../assets/" ++ imageName), width sideLength, height sideLength]
+        img [ style pieceStyle, src ("assets/" ++ imageName), width sideLength, height sideLength]
             []
       Nothing ->
         div [] []
