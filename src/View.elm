@@ -14,20 +14,6 @@ import Chess.Pieces exposing (PlayerPiece, getPieceDisplayInfo)
 
 import Debug
 
-pieceStyle color =
-  let
-    textShadow =
-      if color == "white" then
-        "#000 0px 0px 3px"
-      else
-        "none"
-  in
-    style
-      [ ("font-size", "30px")
-      , ("color", color)
-      , ("text-shadow", textShadow)
-      ]
-
 renderPiece : Int -> Maybe PlayerPiece -> Html Action
 renderPiece sideLength piece =
   let
@@ -54,7 +40,7 @@ squareStyle sideLength color =
 
 hightlightStyle sideLength hightlightColor =
   style
-    [ ("backgroundColor", (Debug.log "color" hightlightColor))
+    [ ("backgroundColor", hightlightColor)
     , ("opacity", "0.9")
     , ("position", "absolute")
     , ("width", toString sideLength ++ "px")
@@ -120,12 +106,27 @@ renderRank sideLength selectedSquare rank =
     <| List.map (renderSquare sideLength selectedSquare)
       <| Dict.values rank
 
+boardStyle =
+  style
+    [ ("box-shadow", "0px 0px 20px 2px black")
+    ]
+
 renderBoard : Int -> Maybe Square -> Board -> Html Action
 renderBoard sideLength selectedSquare board =
-  div []
+  div [ boardStyle ]
     <| List.map (renderRank sideLength selectedSquare)
       <| Dict.values board
 
 view : Model -> Html Action
 view model =
-  renderBoard 50 model.selectedSquare model.boardView
+  div
+    [ style
+        [ ("display", "flex")
+        , ("align-items", "center")
+        , ("justify-content", "center")
+        , ("width", "100%")
+        , ("height", "100%")
+        ]
+    ]
+    [ renderBoard 60 model.selectedSquare model.boardView
+    ]
