@@ -12,8 +12,6 @@ import Chess.Square exposing (Square, Highlight(..))
 import Chess.Board exposing (Board, Rank)
 import Chess.Pieces exposing (PlayerPiece, getPieceDisplayInfo)
 
-import Debug
-
 renderPiece : Int -> Maybe PlayerPiece -> Html Action
 renderPiece sideLength piece =
   let
@@ -22,11 +20,13 @@ renderPiece sideLength piece =
     pieceStyle =
       [ ("z-index", "1")
       , ("position", "absolute")
+      , ("width", toString sideLength ++ "rem")
+      , ("height", toString sideLength ++ "rem")
       ]
   in
     case pieceDisplayInfo of
       Just imageName ->
-        img [ style pieceStyle, src ("assets/" ++ imageName), width sideLength, height sideLength]
+        img [ style pieceStyle, src ("assets/" ++ imageName) ]
             []
       Nothing ->
         div [] []
@@ -34,8 +34,8 @@ renderPiece sideLength piece =
 squareStyle sideLength color =
   style
     [ ("backgroundColor", color)
-    , ("height", toString sideLength ++ "px")
-    , ("width", toString sideLength ++ "px")
+    , ("height", toString sideLength ++ "rem")
+    , ("width", toString sideLength ++ "rem")
     ]
 
 hightlightStyle sideLength hightlightColor =
@@ -43,8 +43,8 @@ hightlightStyle sideLength hightlightColor =
     [ ("backgroundColor", hightlightColor)
     , ("opacity", "0.9")
     , ("position", "absolute")
-    , ("width", toString sideLength ++ "px")
-    , ("height", toString sideLength ++ "px")
+    , ("width", toString sideLength ++ "rem")
+    , ("height", toString sideLength ++ "rem")
     ]
 
 squareSelectAction : Maybe Square -> Square -> Action
@@ -96,7 +96,7 @@ renderSquare sideLength selectedSquare square =
 
 rankStyle sideLength =
   style
-    [ ("height", toString sideLength ++ "px")
+    [ ("height", toString sideLength ++ "rem")
     , ("display", "flex")
     ]
 
@@ -106,27 +106,19 @@ renderRank sideLength selectedSquare rank =
     <| List.map (renderSquare sideLength selectedSquare)
       <| Dict.values rank
 
-boardStyle =
+boardStyle sideLength =
   style
-    [ ("box-shadow", "0px 0px 20px 2px black")
+    [ ("box-shadow", "0 0 2rem -0.2rem black")
+    , ("width", toString (sideLength * 8) ++ "rem")
+    , ("height", toString (sideLength * 8) ++ "rem")
     ]
 
 renderBoard : Int -> Maybe Square -> Board -> Html Action
 renderBoard sideLength selectedSquare board =
-  div [ boardStyle ]
+  div [ boardStyle sideLength ]
     <| List.map (renderRank sideLength selectedSquare)
       <| Dict.values board
 
 view : Model -> Html Action
 view model =
-  div
-    [ style
-        [ ("display", "flex")
-        , ("align-items", "center")
-        , ("justify-content", "center")
-        , ("width", "100%")
-        , ("height", "100%")
-        ]
-    ]
-    [ renderBoard 60 model.selectedSquare model.boardView
-    ]
+  renderBoard 5 model.selectedSquare model.boardView

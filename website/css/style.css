@@ -1,0 +1,32 @@
+html {
+  font-size: 10px
+}
+
+#elm-chessboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+h1 {
+  font-size: 4rem;
+  font-weight: 100;
+  color: slategrey;
+}
+
+footer {
+  margin-top: 5rem;
+}
+
+#view-source {
+  font-size: 1.6rem;
+}
+
+@media screen and (max-width: 1024px) {
+  html {
+    font-size: 20px;
+  }
+}
