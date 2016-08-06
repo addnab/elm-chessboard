@@ -23,7 +23,11 @@ type alias Position =
   , rank : Int
   }
 
-type Move = Capture Position | Goto Position
+type Move
+  = Capture Position
+  | Goto Position
+  | CastleKingSide Position
+  | CastleQueenSide Position
 
 type alias Square =
   { piece : Maybe PlayerPiece

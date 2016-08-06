@@ -102,10 +102,14 @@ kingMoves playerPiece position board =
 isCapture : Move -> Bool
 isCapture move =
   case move of
-    Capture _
-      -> True
-    Goto _
-      -> False
+    Capture _ ->
+      True
+    Goto _ ->
+      False
+    CastleKingSide _ ->
+      False
+    CastleQueenSide _ ->
+      False
 
 pawnMoves : PlayerPiece -> Position -> Board -> List Move
 pawnMoves playerPiece position board =
@@ -149,19 +153,23 @@ getNextMoves player square kingPosition board =
     Nothing ->
       []
 
-moveToPosition : Move -> Position
-moveToPosition move =
+movePosition : Move -> Position
+movePosition move =
   case move of
     Capture pos ->
       pos
     Goto pos ->
+      pos
+    CastleKingSide pos ->
+      pos
+    CastleQueenSide pos ->
       pos
 
 isKingInAttack : Position -> Board -> PlayerPiece -> Bool
 isKingInAttack kingPosition board playerPiece =
   getPieceMoves kingPosition board playerPiece
     |> List.filter isCapture
-    |> List.map moveToPosition
+    |> List.map movePosition
     |> List.map (\pos -> getPiece pos board)
     |> List.map (Maybe.map .piece)
     |> List.map (Maybe.map ((==) playerPiece.piece))
@@ -172,10 +180,9 @@ isKingSafe player piece piecePosition currentKingPosition board nextMove =
   let
     kingPosition =
       case piece of
-        K -> moveToPosition nextMove
+        K -> movePosition nextMove
         _ -> currentKingPosition
-
-    board = movePiece piecePosition (moveToPosition nextMove) board
+    board = movePiece piecePosition (movePosition nextMove) board
   in
     [ K, Q, R, N, B, P ]
       |> List.map (toPlayerPiece player)
@@ -192,14 +199,14 @@ getBoardViewForNextMoves player playerInfo square board =
       ( \move newBoard ->
           updateSquare
             (\newSquare -> { newSquare | moveToPlay = Just move })
-            (moveToPosition move)
+            (movePosition move)
             newBoard
       )
       board
       nextMoves
 
-applyMove : Position -> Move -> Board ->  { board: Board, capturedPiece: Maybe PlayerPiece }
-applyMove fromPosition move board =
+applyMove : Position -> Move -> PlayerInfo -> Board ->  { board: Board, capturedPiece: Maybe PlayerPiece, playerInfo: PlayerInfo }
+applyMove fromPosition move playerInfo board =
   let
     (newBoard, capturedPiece) =
       case move of
@@ -211,7 +218,29 @@ applyMove fromPosition move board =
           ( movePiece fromPosition toPosition board
           , getPiece toPosition board
           )
+        CastleKingSide toPosition ->
+          ( movePiece fromPosition toPosition board
+          , Nothing
+          )
+        CastleQueenSide toPosition ->
+          ( movePiece fromPosition toPosition board
+          , Nothing
+          )
+    toPosition = movePosition move
+    playerPieceMaybe = getPiece toPosition newBoard
+    kingPosition =
+      case playerPieceMaybe of
+        Just playerPiece ->
+          case playerPiece.piece of
+            K -> toPosition
+            _ -> playerInfo.kingPosition
+        Nothing ->
+          playerInfo.kingPosition
   in
     { board = newBoard
     , capturedPiece = capturedPiece
+    , playerInfo =
+        { playerInfo
+        | kingPosition = kingPosition
+        }
     }

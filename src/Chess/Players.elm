@@ -1,12 +1,17 @@
-module Chess.Players exposing (opponent, playerInit, getPlayerInfo)
+module Chess.Players exposing (opponent, playerInit, getPlayerInfo, setPlayerInfo)
 
 import Chess.Types exposing (Player(..), PlayerInfo)
 
-getPlayerInfo : Player -> { white : PlayerInfo, black : PlayerInfo } -> PlayerInfo
-getPlayerInfo player players =
+getPlayerInfo : { white : PlayerInfo, black : PlayerInfo } -> Player -> PlayerInfo
+getPlayerInfo playersInfo player =
   case player of
-    White -> players.white
-    Black -> players.black
+    White -> playersInfo.white
+    Black -> playersInfo.black
+
+setPlayerInfo playersInfo player playerInfo =
+  case player of
+    White -> { playersInfo | white = playerInfo }
+    Black -> { playersInfo | black = playerInfo }
 
 playerInit =
   PlayerInfo False False
