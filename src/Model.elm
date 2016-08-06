@@ -12,7 +12,7 @@ type alias Model =
   , boardView : Board
   , selectedSquare : Maybe Square
   , playerInTurn : Player
-  , players :
+  , playersInfo :
       { white : PlayerInfo
       , black : PlayerInfo
       }
@@ -79,7 +79,7 @@ initial =
     , boardView = board
     , selectedSquare = Nothing
     , playerInTurn = White
-    , players =
+    , playersInfo =
         { white = playerInit (Position 5 1)
         , black = playerInit (Position 5 8)
         }

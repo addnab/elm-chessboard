@@ -1,11 +1,11 @@
-module Chess.Moves exposing (getBoardViewForNextMoves, isKingInCheck)
+module Chess.Moves exposing (getBoardViewForNextMoves, isKingSafe)
 
 import Dict
 import Chess.Square exposing (Square, highlightSquare)
 import Chess.Position exposing (Position)
 import Chess.Players exposing (Player(..), PlayerInfo, opponent)
 import Chess.Pieces exposing (Piece(..), PlayerPiece, toPlayerPiece)
-import Chess.Board exposing (Board, getPiece, updateSquare)
+import Chess.Board exposing (Board, getPiece, updateSquare, movePiece)
 
 import Debug
 
@@ -141,12 +141,13 @@ getPieceMoves position board playerPiece =
   in
     getMovesForPiece playerPiece position board
 
-getNextMoves : Player -> Square -> Board -> List Move
-getNextMoves player square board =
+getNextMoves : Player -> Square -> Position -> Board -> List Move
+getNextMoves player square kingPosition board =
   case square.piece of
     Just playerPiece ->
       if playerPiece.player == player then
         getPieceMoves square.position board playerPiece
+          |> List.filter (isKingSafe player playerPiece.piece square.position kingPosition board)
       else []
     Nothing ->
       []
@@ -159,9 +160,9 @@ toPosition move =
     Goto pos ->
       pos
 
-isPieceInAttack : Position -> Board -> PlayerPiece -> Bool
-isPieceInAttack position board playerPiece =
-  getPieceMoves position board playerPiece
+isKingInAttack : Position -> Board -> PlayerPiece -> Bool
+isKingInAttack kingPosition board playerPiece =
+  getPieceMoves kingPosition board playerPiece
     |> List.filter isCapture
     |> List.map toPosition
     |> List.map (\pos -> getPiece pos board)
@@ -169,17 +170,26 @@ isPieceInAttack position board playerPiece =
     |> List.map (Maybe.map ((==) playerPiece.piece))
     |> List.any (Maybe.withDefault False)
 
-isKingInCheck : Player -> Position -> Board -> Bool
-isKingInCheck player position board =
-  [ K, Q, R, N, B, P ]
-    |> List.map (toPlayerPiece player)
-    |> List.any (isPieceInAttack position board)
+isKingSafe : Player -> Piece -> Position -> Position -> Board -> Move -> Bool
+isKingSafe player piece piecePosition currentKingPosition board nextMove =
+  let
+    kingPosition =
+      case piece of
+        K -> toPosition nextMove
+        _ -> currentKingPosition
+
+    board = (movePiece piecePosition (toPosition nextMove) board).board
+  in
+    [ K, Q, R, N, B, P ]
+      |> List.map (toPlayerPiece player)
+      |> List.any (isKingInAttack kingPosition board)
+      |> not
 
 getBoardViewForNextMoves : Player -> PlayerInfo -> Square -> Board -> Board
 getBoardViewForNextMoves player playerInfo square board =
   let
     nextMoves =
-      getNextMoves player square board
+      getNextMoves player square playerInfo.kingPosition board
         |> List.map toPosition
   in
     nextMoves
