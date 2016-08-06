@@ -1,10 +1,11 @@
 module Update exposing (update)
 
-import Chess.Moves exposing (getBoardViewForNextMoves, isKingSafe)
-import Chess.Board exposing (movePiece)
+import Chess.Types exposing (Move)
+import Chess.Moves exposing (getBoardViewForNextMoves, isKingSafe, applyMove)
 import Model exposing (Model)
 import Actions exposing (Action(..))
 import Chess.Players exposing (opponent, getPlayerInfo)
+
 import Debug
 
 update : Action -> Model -> Model
@@ -22,9 +23,9 @@ update action model =
       }
     Deselect ->
       { model | selectedSquare = Nothing }
-    Move square position ->
+    MovePiece fromPosition move ->
       let
-        { board, capturedPiece } = movePiece square.position position model.board
+        { board, capturedPiece } = applyMove fromPosition move model.board
       in
         { model
         | board = board

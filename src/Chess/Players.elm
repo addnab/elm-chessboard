@@ -1,14 +1,6 @@
-module Chess.Players exposing (Player(..), PlayerInfo, opponent, playerInit, getPlayerInfo)
+module Chess.Players exposing (opponent, playerInit, getPlayerInfo)
 
-import Chess.Position exposing (Position)
-
-type Player = White | Black
-
-type alias PlayerInfo =
-  { canCastle : Bool
-  , inCheck : Bool
-  , kingPosition : Position
-  }
+import Chess.Types exposing (Player(..), PlayerInfo)
 
 getPlayerInfo : Player -> { white : PlayerInfo, black : PlayerInfo } -> PlayerInfo
 getPlayerInfo player players =

@@ -1,16 +1,9 @@
-module Chess.Board exposing (Board, Rank, movePiece, getPiece, updateSquare)
+module Chess.Board exposing (movePiece, getPiece, updateSquare)
 
 import Dict as Dict
-import Chess.Square exposing (Square, Highlight(..))
-import Chess.Position exposing (Position)
-import Chess.Players exposing (Player(..))
-import Chess.Pieces exposing (Piece(..), PlayerPiece)
+import Chess.Types exposing (Board, Rank, Square, Position, Player(..), Piece(..), PlayerPiece)
 
 import Debug
-
-type alias Board = Dict.Dict Int Rank
-
-type alias Rank = Dict.Dict Int Square
 
 updateSquare : (Square -> Square) -> Position -> Board -> Board
 updateSquare squareModifier position =
@@ -47,11 +40,7 @@ removePiece position board =
   in
     (newBoard, piece)
 
-movePiece : Position -> Position -> Board -> { board: Board, capturedPiece: Maybe PlayerPiece }
+movePiece : Position -> Position -> Board -> Board
 movePiece fromPosition toPosition board =
-  { board =
-      board
-        |> (removePiece fromPosition) >> (setPiece toPosition)
-  , capturedPiece =
-      getPiece toPosition board
-  }
+  board
+    |> (removePiece fromPosition) >> (setPiece toPosition)

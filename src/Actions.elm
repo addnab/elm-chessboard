@@ -1,10 +1,9 @@
 module Actions exposing (Action(..))
 
-import Chess.Square exposing (Square)
-import Chess.Position exposing (Position)
+import Chess.Types exposing (Square, Position, Move)
 
 type Action
   = Reset
-  | Move Square Position
+  | MovePiece Position Move
   | Select Square
   | Deselect

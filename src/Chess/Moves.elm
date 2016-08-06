@@ -1,11 +1,10 @@
-module Chess.Moves exposing (getBoardViewForNextMoves, isKingSafe)
+module Chess.Moves exposing (getBoardViewForNextMoves, isKingSafe, applyMove)
 
 import Dict
-import Chess.Square exposing (Square, highlightSquare)
-import Chess.Position exposing (Position)
-import Chess.Players exposing (Player(..), PlayerInfo, opponent)
-import Chess.Pieces exposing (Piece(..), PlayerPiece, toPlayerPiece)
-import Chess.Board exposing (Board, getPiece, updateSquare, movePiece)
+import Chess.Types exposing (PlayerInfo, Move(..), Piece(..), PlayerPiece, Position, Square, Board, Player(..))
+import Chess.Players exposing (opponent)
+import Chess.Pieces exposing (toPlayerPiece)
+import Chess.Board exposing (getPiece, updateSquare, movePiece)
 
 import Debug
 
@@ -13,8 +12,6 @@ type alias Direction =
   { x : Int
   , y : Int
   }
-
-type Move = Capture Position | Goto Position
 
 n  = Direction  0  1
 s  = Direction  0 -1
@@ -152,8 +149,8 @@ getNextMoves player square kingPosition board =
     Nothing ->
       []
 
-toPosition : Move -> Position
-toPosition move =
+moveToPosition : Move -> Position
+moveToPosition move =
   case move of
     Capture pos ->
       pos
@@ -164,7 +161,7 @@ isKingInAttack : Position -> Board -> PlayerPiece -> Bool
 isKingInAttack kingPosition board playerPiece =
   getPieceMoves kingPosition board playerPiece
     |> List.filter isCapture
-    |> List.map toPosition
+    |> List.map moveToPosition
     |> List.map (\pos -> getPiece pos board)
     |> List.map (Maybe.map .piece)
     |> List.map (Maybe.map ((==) playerPiece.piece))
@@ -175,10 +172,10 @@ isKingSafe player piece piecePosition currentKingPosition board nextMove =
   let
     kingPosition =
       case piece of
-        K -> toPosition nextMove
+        K -> moveToPosition nextMove
         _ -> currentKingPosition
 
-    board = (movePiece piecePosition (toPosition nextMove) board).board
+    board = movePiece piecePosition (moveToPosition nextMove) board
   in
     [ K, Q, R, N, B, P ]
       |> List.map (toPlayerPiece player)
@@ -190,7 +187,31 @@ getBoardViewForNextMoves player playerInfo square board =
   let
     nextMoves =
       getNextMoves player square playerInfo.kingPosition board
-        |> List.map toPosition
   in
-    nextMoves
-      |> List.foldr (updateSquare (highlightSquare player)) board
+    List.foldr
+      ( \move newBoard ->
+          updateSquare
+            (\newSquare -> { newSquare | moveToPlay = Just move })
+            (moveToPosition move)
+            newBoard
+      )
+      board
+      nextMoves
+
+applyMove : Position -> Move -> Board ->  { board: Board, capturedPiece: Maybe PlayerPiece }
+applyMove fromPosition move board =
+  let
+    (newBoard, capturedPiece) =
+      case move of
+        Goto toPosition ->
+          ( movePiece fromPosition toPosition board
+          , Nothing
+          )
+        Capture toPosition ->
+          ( movePiece fromPosition toPosition board
+          , getPiece toPosition board
+          )
+  in
+    { board = newBoard
+    , capturedPiece = capturedPiece
+    }

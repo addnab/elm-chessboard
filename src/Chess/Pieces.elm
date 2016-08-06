@@ -1,16 +1,7 @@
-module Chess.Pieces exposing (PlayerPiece, Piece(..), getPieceDisplayInfo, toPlayerPiece)
+module Chess.Pieces exposing (getPieceDisplayInfo, toPlayerPiece)
 
-import Chess.Players exposing (Player(..))
-import Chess.Position exposing (Position)
+import Chess.Types exposing (Player(..), Position, PlayerPiece, Piece(..))
 import Color exposing (Color)
-
-type Piece = K | Q | R | N | B | P
-
-type alias PlayerPiece =
-  { player : Player
-  , moved : Bool
-  , piece : Piece
-  }
 
 toPlayerPiece : Player -> Piece -> PlayerPiece
 toPlayerPiece player piece =

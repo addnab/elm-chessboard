@@ -8,10 +8,8 @@ import Model exposing (Model)
 import Actions exposing (Action(..))
 import Dict
 import Color exposing (Color)
-import Chess.Square exposing (Square, Highlight(..))
-import Chess.Board exposing (Board, Rank)
-import Chess.Players exposing (Player)
-import Chess.Pieces exposing (PlayerPiece, getPieceDisplayInfo)
+import Chess.Types exposing (Square, Board, Rank, Player, PlayerPiece, Move(..))
+import Chess.Pieces exposing (getPieceDisplayInfo)
 
 disablePiece : Player -> Maybe PlayerPiece -> Bool
 disablePiece playerInTurn playerPieceMaybe =
@@ -67,12 +65,10 @@ squareSelectAction fromSquareMaybe toSquare =
     Nothing ->
       Select toSquare
     Just fromSquare ->
-      case toSquare.highlight of
-        Movable ->
-          Move fromSquare toSquare.position
-        Capturable ->
-          Move fromSquare toSquare.position
-        None ->
+      case toSquare.moveToPlay of
+        Just move ->
+          MovePiece fromSquare.position move
+        Nothing ->
           Select toSquare
 
 renderSquare : Int -> Maybe Square -> Player -> Square -> Html Action
@@ -86,12 +82,14 @@ renderSquare sideLength selectedSquare playerInTurn square =
         Nothing ->
           False
     highlightColor =
-      case square.highlight of
-        Movable ->
-          "grey"
-        Capturable ->
-          "red"
-        None ->
+      case square.moveToPlay of
+        Just move ->
+          case move of
+            Goto _ ->
+              "grey"
+            Capture _ ->
+              "red"
+        Nothing ->
           if isSelected then
             "yellow"
           else

@@ -1,11 +1,8 @@
 module Model exposing (Model, initial)
 
 import Dict
-import Chess.Board exposing (Board, Rank)
-import Chess.Pieces exposing (Piece(..), PlayerPiece)
-import Chess.Square exposing (Square, Highlight(..))
-import Chess.Position exposing (..)
-import Chess.Players exposing (Player(..), PlayerInfo, playerInit)
+import Chess.Types exposing (..)
+import Chess.Players exposing (playerInit)
 
 type alias Model =
   { board : Board
@@ -20,7 +17,7 @@ type alias Model =
 
 createSquare : Int -> Int -> Maybe PlayerPiece -> Square
 createSquare rank file piece =
-  Square piece { file = file, rank = rank } None
+  Square piece { file = file, rank = rank } Nothing
 
 createRank : Int -> List (Maybe PlayerPiece) -> Rank
 createRank rank pieceOrder =
