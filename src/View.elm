@@ -90,7 +90,7 @@ renderSquare sideLength selectedSquare playerInTurn square =
             Capture _ ->
               "red"
             _ ->
-              "grey"
+              "blue"
         Nothing ->
           if isSelected then
             "yellow"

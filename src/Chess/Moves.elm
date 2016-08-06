@@ -92,12 +92,96 @@ queenMoves playerPiece position board =
   bishopMoves playerPiece position board
     ++ rookMoves playerPiece position board
 
-kingMoves : PlayerPiece -> Position -> Board -> List Move
-kingMoves playerPiece position board =
+castleConditionEmptySquares : Bool -> Int -> Board -> Bool
+castleConditionEmptySquares isKingSide rank board =
+  let
+    squaresInBetween =
+      if isKingSide then
+        [ Position 7 rank, Position 6 rank ]
+      else
+        [ Position 2 rank, Position 3 rank, Position 4 rank ]
+    isPositionEmpty pos =
+      case (getPiece pos board) of
+        Just _
+          -> False
+        Nothing
+          -> True
+  in
+    squaresInBetween
+      |> List.map isPositionEmpty
+      |> List.all identity
+
+castleConditionRookNotMoved : Bool -> Int -> Board -> Bool
+castleConditionRookNotMoved isKingSide rank board =
+  let
+    rookPosition =
+      if isKingSide then
+        Position 8 rank
+      else
+        Position 1 rank
+    playerPieceMaybe = getPiece rookPosition board
+  in
+    case playerPieceMaybe of
+      Just playerPiece ->
+        case playerPiece.piece of
+          R -> not playerPiece.moved
+          _ -> False
+      Nothing ->
+        False
+
+castleConditionKingCheck : Bool -> PlayerPiece -> Position -> Int -> Board -> Bool
+castleConditionKingCheck isKingSide kingPiece kingPosition rank board =
+  let
+    kingPassThroughPositions =
+      if isKingSide then
+        [ Position 7 rank, Position 6 rank, Position 5 rank ]
+      else
+        [ Position 3 rank, Position 4 rank, Position 5 rank ]
+  in
+    kingPassThroughPositions
+      |> List.map (\pos -> isKingSafe True kingPiece kingPosition kingPosition board (Goto pos))
+      |> List.all identity
+
+checkCastleCondition : Bool -> PlayerPiece -> Position -> Int -> Board -> Bool
+checkCastleCondition isKingSide kingPiece kingPosition rank board =
+  List.all identity
+    [ castleConditionRookNotMoved isKingSide rank board
+    , castleConditionEmptySquares isKingSide rank board
+    , castleConditionKingCheck isKingSide kingPiece kingPosition rank board
+    ]
+
+getCastleMoves : PlayerPiece -> Position -> Board -> List Move
+getCastleMoves kingPiece kingPosition board =
+  if not kingPiece.moved then
+    let
+      rank =
+        case kingPiece.player of
+          White -> 1
+          Black -> 8
+      kingSideCastle =
+        if (checkCastleCondition True kingPiece kingPosition rank board) then
+          [ CastleKingSide (Position 7 rank) ]
+        else []
+      queenSideCastle =
+        if (checkCastleCondition False kingPiece kingPosition rank board) then
+          [ CastleQueenSide (Position 3 rank) ]
+        else []
+    in
+      kingSideCastle ++ queenSideCastle
+  else []
+
+kingMoves : Bool -> PlayerPiece -> Position -> Board -> List Move
+kingMoves isCastling playerPiece position board =
   let
     directions = [ n, s, e, w, ne, nw, se, sw ]
+    normalMoves = pieceMoves playerPiece position board (Just 1) directions
+    castleMoves =
+      if isCastling then
+        []
+      else
+        getCastleMoves playerPiece position board
   in
-    pieceMoves playerPiece position board (Just 1) directions
+    normalMoves ++ castleMoves
 
 isCapture : Move -> Bool
 isCapture move =
@@ -128,12 +212,12 @@ pawnMoves playerPiece position board =
   in
     normalMoves ++ captureMoves
 
-getPieceMoves : Position -> Board -> PlayerPiece -> List Move
-getPieceMoves position board playerPiece =
+getPieceMoves : Bool -> Position -> Board -> PlayerPiece -> List Move
+getPieceMoves isCastling position board playerPiece =
   let
     getMovesForPiece =
       case playerPiece.piece of
-        K -> kingMoves
+        K -> kingMoves isCastling
         Q -> queenMoves
         R -> rookMoves
         N -> knightMoves
@@ -147,8 +231,8 @@ getNextMoves player square kingPosition board =
   case square.piece of
     Just playerPiece ->
       if playerPiece.player == player then
-        getPieceMoves square.position board playerPiece
-          |> List.filter (isKingSafe player playerPiece.piece square.position kingPosition board)
+        getPieceMoves False square.position board playerPiece
+          |> List.filter (isKingSafe False playerPiece square.position kingPosition board)
       else []
     Nothing ->
       []
@@ -165,9 +249,9 @@ movePosition move =
     CastleQueenSide pos ->
       pos
 
-isKingInAttack : Position -> Board -> PlayerPiece -> Bool
-isKingInAttack kingPosition board playerPiece =
-  getPieceMoves kingPosition board playerPiece
+isKingInAttack : Bool -> Position -> Board -> PlayerPiece -> Bool
+isKingInAttack isCastling kingPosition board playerPiece =
+  getPieceMoves isCastling kingPosition board playerPiece
     |> List.filter isCapture
     |> List.map movePosition
     |> List.map (\pos -> getPiece pos board)
@@ -175,18 +259,18 @@ isKingInAttack kingPosition board playerPiece =
     |> List.map (Maybe.map ((==) playerPiece.piece))
     |> List.any (Maybe.withDefault False)
 
-isKingSafe : Player -> Piece -> Position -> Position -> Board -> Move -> Bool
-isKingSafe player piece piecePosition currentKingPosition board nextMove =
+isKingSafe : Bool -> PlayerPiece -> Position -> Position -> Board -> Move -> Bool
+isKingSafe isCastling playerPiece piecePosition currentKingPosition board nextMove =
   let
     kingPosition =
-      case piece of
+      case playerPiece.piece of
         K -> movePosition nextMove
         _ -> currentKingPosition
-    board = movePiece piecePosition (movePosition nextMove) board
+    newBoard = movePiece piecePosition (movePosition nextMove) board
   in
     [ K, Q, R, N, B, P ]
-      |> List.map (toPlayerPiece player)
-      |> List.any (isKingInAttack kingPosition board)
+      |> List.map (toPlayerPiece playerPiece.player)
+      |> List.any (isKingInAttack isCastling kingPosition newBoard)
       |> not
 
 getBoardViewForNextMoves : Player -> PlayerInfo -> Square -> Board -> Board
@@ -205,9 +289,13 @@ getBoardViewForNextMoves player playerInfo square board =
       board
       nextMoves
 
-applyMove : Position -> Move -> PlayerInfo -> Board ->  { board: Board, capturedPiece: Maybe PlayerPiece, playerInfo: PlayerInfo }
-applyMove fromPosition move playerInfo board =
+applyMove : Player -> Position -> Move -> PlayerInfo -> Board -> { board: Board, capturedPiece: Maybe PlayerPiece, playerInfo: PlayerInfo }
+applyMove player fromPosition move playerInfo board =
   let
+    rank =
+      case player of
+        White -> 1
+        Black -> 8
     (newBoard, capturedPiece) =
       case move of
         Goto toPosition ->
@@ -219,11 +307,15 @@ applyMove fromPosition move playerInfo board =
           , getPiece toPosition board
           )
         CastleKingSide toPosition ->
-          ( movePiece fromPosition toPosition board
+          ( board
+              |> movePiece fromPosition toPosition
+              |> movePiece (Position 8 rank) (Position 6 rank)
           , Nothing
           )
         CastleQueenSide toPosition ->
-          ( movePiece fromPosition toPosition board
+          ( board
+              |> movePiece fromPosition toPosition
+              |> movePiece (Position 1 rank) (Position 4 rank)
           , Nothing
           )
     toPosition = movePosition move

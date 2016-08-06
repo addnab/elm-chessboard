@@ -27,6 +27,7 @@ update action model =
       let
         { board, capturedPiece, playerInfo } =
           applyMove
+            model.playerInTurn
             fromPosition
             move
             (getPlayerInfo model.playersInfo model.playerInTurn)
