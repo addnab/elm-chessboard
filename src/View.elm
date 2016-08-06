@@ -10,19 +10,33 @@ import Dict
 import Color exposing (Color)
 import Chess.Square exposing (Square, Highlight(..))
 import Chess.Board exposing (Board, Rank)
+import Chess.Players exposing (Player)
 import Chess.Pieces exposing (PlayerPiece, getPieceDisplayInfo)
 
-renderPiece : Int -> Maybe PlayerPiece -> Html Action
-renderPiece sideLength piece =
+disablePiece : Player -> Maybe PlayerPiece -> Bool
+disablePiece playerInTurn playerPieceMaybe =
+  playerPieceMaybe
+    |> Maybe.map (\playerPiece -> playerPiece.player /= playerInTurn)
+    |> Maybe.withDefault False
+
+renderPiece : Int -> Player -> Maybe PlayerPiece -> Html Action
+renderPiece sideLength playerInTurn piece =
   let
     pieceDisplayInfo =
       getPieceDisplayInfo piece
+    pieceOpacity =
+      if (disablePiece playerInTurn piece) then
+        ("opacity", "0.6")
+      else
+        ("opacity", "1")
     pieceStyle =
-      [ ("z-index", "1")
-      , ("position", "absolute")
-      , ("width", toString sideLength ++ "rem")
-      , ("height", toString sideLength ++ "rem")
-      ]
+      pieceOpacity ::
+        [ ("z-index", "1")
+        , ("position", "absolute")
+        , ("width", toString sideLength ++ "rem")
+        , ("height", toString sideLength ++ "rem")
+        ]
+
   in
     case pieceDisplayInfo of
       Just imageName ->
@@ -61,8 +75,8 @@ squareSelectAction fromSquareMaybe toSquare =
         None ->
           Select toSquare
 
-renderSquare : Int -> Maybe Square -> Square -> Html Action
-renderSquare sideLength selectedSquare square =
+renderSquare : Int -> Maybe Square -> Player -> Square -> Html Action
+renderSquare sideLength selectedSquare playerInTurn square =
   let
     { file, rank } = square.position
     isSelected =
@@ -84,14 +98,14 @@ renderSquare sideLength selectedSquare square =
             ""
 
     baseColor =
-      if (file + rank) % 2 == 0 then
+      if (file + rank) % 2 /= 0 then
         "white"
       else
         "green"
   in
     div [ squareStyle sideLength baseColor, onClick (squareSelectAction selectedSquare square) ]
       [ div [ hightlightStyle sideLength highlightColor ] []
-      , renderPiece sideLength square.piece
+      , renderPiece sideLength playerInTurn square.piece
       ]
 
 rankStyle sideLength =
@@ -100,10 +114,10 @@ rankStyle sideLength =
     , ("display", "flex")
     ]
 
-renderRank : Int -> Maybe Square -> Rank -> Html Action
-renderRank sideLength selectedSquare rank =
+renderRank : Int -> Maybe Square -> Player -> Rank -> Html Action
+renderRank sideLength selectedSquare playerInTurn rank =
   div [ rankStyle sideLength ]
-    <| List.map (renderSquare sideLength selectedSquare)
+    <| List.map (renderSquare sideLength selectedSquare playerInTurn)
       <| Dict.values rank
 
 boardStyle sideLength =
@@ -113,12 +127,13 @@ boardStyle sideLength =
     , ("height", toString (sideLength * 8) ++ "rem")
     ]
 
-renderBoard : Int -> Maybe Square -> Board -> Html Action
-renderBoard sideLength selectedSquare board =
+renderBoard : Int -> Maybe Square -> Player -> Board -> Html Action
+renderBoard sideLength selectedSquare playerInTurn board =
   div [ boardStyle sideLength ]
-    <| List.map (renderRank sideLength selectedSquare)
-      <| Dict.values board
+    <| List.map (renderRank sideLength selectedSquare playerInTurn)
+      <| List.reverse
+        <| Dict.values board
 
 view : Model -> Html Action
 view model =
-  renderBoard 5 model.selectedSquare model.boardView
+  renderBoard 5 model.selectedSquare model.playerInTurn model.boardView

@@ -37,7 +37,7 @@ emptyRank rank =
 initialFirstRank : Player -> Rank
 initialFirstRank player =
   let
-    pieceOrder = List.map (PlayerPiece player False) [ R, N, B, K, Q, B, N, R ]
+    pieceOrder = List.map (PlayerPiece player False) [ R, N, B, Q, K, B, N, R ]
     rank =
       case player of
         White -> 1
@@ -80,7 +80,7 @@ initial =
     , selectedSquare = Nothing
     , playerInTurn = White
     , players =
-        { white = playerInit (Position 4 1)
-        , black = playerInit (Position 4 8)
+        { white = playerInit (Position 5 1)
+        , black = playerInit (Position 5 8)
         }
     }
