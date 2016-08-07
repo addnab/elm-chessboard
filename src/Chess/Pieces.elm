@@ -23,7 +23,7 @@ getImageName playerPiece =
         B -> "B"
         N -> "N"
         R -> "R"
-        P -> "P"
+        P _ -> "P"
   in
     color ++ "_" ++ piece ++ ".png"
 

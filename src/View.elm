@@ -87,10 +87,15 @@ renderSquare sideLength selectedSquare playerInTurn square =
           case move of
             Goto _ ->
               "grey"
+            PawnJump _ ->
+              "grey"
             Capture _ ->
+              "red"
+            Enpassant _ ->
               "red"
             _ ->
               "blue"
+
         Nothing ->
           if isSelected then
             "yellow"

@@ -1,4 +1,4 @@
-module Chess.Board exposing (movePiece, getPiece, updateSquare)
+module Chess.Board exposing (movePiece, getPiece, updateSquare, setPiece, removePiece)
 
 import Dict as Dict
 import Chess.Types exposing (Board, Rank, Square, Position, Player(..), Piece(..), PlayerPiece)

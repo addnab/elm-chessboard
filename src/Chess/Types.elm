@@ -4,7 +4,13 @@ import Dict
 
 type Player = White | Black
 
-type Piece = K | Q | R | N | B | P
+type Piece
+  = K
+  | Q
+  | R
+  | N
+  | B
+  | P { enPassant: Maybe Position }
 
 type alias PlayerPiece =
   { player : Player
@@ -26,8 +32,10 @@ type alias Position =
 type Move
   = Capture Position
   | Goto Position
+  | PawnJump Position
   | CastleKingSide Position
   | CastleQueenSide Position
+  | Enpassant Position
 
 type alias Square =
   { piece : Maybe PlayerPiece

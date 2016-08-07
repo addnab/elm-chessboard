@@ -51,7 +51,8 @@ initialSecondRank player =
       case player of
         White -> 2
         Black -> 7
-    pieceOrder = List.map (PlayerPiece player False) [ P, P, P, P, P, P, P, P ]
+    p = P { enPassant = Nothing }
+    pieceOrder = List.map (PlayerPiece player False) [ p, p, p, p, p, p, p, p ]
   in
     pieceOrder
       |> List.map Just
