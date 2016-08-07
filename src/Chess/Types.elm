@@ -36,6 +36,7 @@ type Move
   | CastleKingSide Position
   | CastleQueenSide Position
   | Enpassant Position
+  | Promotion Position
 
 type alias Square =
   { piece : Maybe PlayerPiece

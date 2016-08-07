@@ -8,8 +8,8 @@ import Model exposing (Model)
 import Actions exposing (Action(..))
 import Dict
 import Color exposing (Color)
-import Chess.Types exposing (Square, Board, Rank, Player, PlayerPiece, Move(..))
-import Chess.Pieces exposing (getPieceDisplayInfo)
+import Chess.Types exposing (Square, Board, Rank, Player, Position, PlayerPiece, Move(..), Piece(..))
+import Chess.Pieces exposing (getPieceDisplayInfo, toPlayerPiece)
 
 disablePiece : Player -> Maybe PlayerPiece -> Bool
 disablePiece playerInTurn playerPieceMaybe =
@@ -50,7 +50,7 @@ squareStyle sideLength color =
     , ("width", toString sideLength ++ "rem")
     ]
 
-hightlightStyle sideLength hightlightColor =
+highlightStyle sideLength hightlightColor =
   style
     [ ("backgroundColor", hightlightColor)
     , ("opacity", "0.9")
@@ -93,6 +93,8 @@ renderSquare sideLength selectedSquare playerInTurn square =
               "red"
             Enpassant _ ->
               "red"
+            Promotion _ ->
+              "orange"
             _ ->
               "blue"
 
@@ -109,7 +111,7 @@ renderSquare sideLength selectedSquare playerInTurn square =
         "green"
   in
     div [ squareStyle sideLength baseColor, onClick (squareSelectAction selectedSquare square) ]
-      [ div [ hightlightStyle sideLength highlightColor ] []
+      [ div [ highlightStyle sideLength highlightColor ] []
       , renderPiece sideLength playerInTurn square.piece
       ]
 
@@ -130,6 +132,7 @@ boardStyle sideLength =
     [ ("box-shadow", "0 0 2rem -0.2rem black")
     , ("width", toString (sideLength * 8) ++ "rem")
     , ("height", toString (sideLength * 8) ++ "rem")
+    , ("position", "absolute")
     ]
 
 renderBoard : Int -> Maybe Square -> Player -> Board -> Html Action
@@ -139,6 +142,57 @@ renderBoard sideLength selectedSquare playerInTurn board =
       <| List.reverse
         <| Dict.values board
 
+promotePiecePickerStyle sideLength =
+  style
+    [ ("position", "absolute")
+    , ("width", toString (sideLength * 4) ++ "rem")
+    , ("height", toString (sideLength) ++ "rem")
+    , ("backgroundColor", "white")
+    , ("z-index", "2")
+    , ("display", "flex")
+    , ("border", "2px solid orange")
+    ]
+
+promotePieceStyle sideLength =
+  style
+    [ ("width", toString sideLength ++ "rem")
+    , ("height", toString sideLength ++ "rem")
+    ]
+
+renderPromotePiecePicker : Int -> Player -> Maybe Position -> Html Action
+renderPromotePiecePicker sideLength playerInTurn promote =
+  case promote of
+    Just position ->
+      div [ promotePiecePickerStyle sideLength ]
+        ( List.map
+            (\piece ->
+              let
+                playerPiece = toPlayerPiece playerInTurn piece
+              in
+                div
+                  [ onClick (PromoteToPiece playerPiece position)
+                  , promotePieceStyle sideLength
+                  ]
+                  [ renderPiece sideLength playerInTurn (Just playerPiece)
+                  ]
+            )
+            [ R, N, B, Q ]
+        )
+    Nothing ->
+      div [] []
+
+viewStyle sideLength =
+  style
+    [ ("height", toString (sideLength * 8) ++ "rem")
+    , ("width", toString (sideLength * 8) ++ "rem")
+    , ("display", "flex")
+    , ("align-items", "center")
+    , ("justify-content", "center")
+    ]
+
 view : Model -> Html Action
 view model =
-  renderBoard 5 model.selectedSquare model.playerInTurn model.boardView
+  div [ viewStyle 5 ]
+    [ renderBoard 5 model.selectedSquare model.playerInTurn model.boardView
+    , renderPromotePiecePicker 7 model.playerInTurn model.promote
+    ]
