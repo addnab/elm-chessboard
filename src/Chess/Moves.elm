@@ -2,7 +2,7 @@ module Chess.Moves exposing (getBoardViewForNextMoves, isKingSafe, applyMove)
 
 import Dict
 import Task
-import Chess.Types exposing (PlayerInfo, Move(..), Piece(..), PlayerPiece, Position, Square, Board, Player(..))
+import Chess.Types exposing (PlayerInfo, Move, MoveType(..), Piece(..), PlayerPiece, Position, Square, Board, Player(..))
 import Chess.Players exposing (opponent)
 import Chess.Pieces exposing (toPlayerPiece)
 import Chess.Board exposing (getPiece, updateSquare, movePiece, setPiece, removePiece)
@@ -48,9 +48,9 @@ movesByDirection playerPiece board position maxHopCount direction =
           if nextPlayerPiece.player == playerPiece.player then
             []
           else
-            [ Capture newPosition ]
+            [ Move Capture newPosition ]
         Nothing ->
-          (Goto newPosition)
+          (Move Goto newPosition)
             :: movesByDirection playerPiece board newPosition (Just (hopCount - 1)) direction
     else
       []
@@ -141,7 +141,7 @@ castleConditionKingCheck isKingSide kingPiece kingPosition rank board =
         [ Position 3 rank, Position 4 rank, Position 5 rank ]
   in
     kingPassThroughPositions
-      |> List.map (\pos -> isKingSafe True kingPiece kingPosition kingPosition board (Goto pos))
+      |> List.map (\pos -> isKingSafe True kingPiece kingPosition kingPosition board (Move Goto pos))
       |> List.all identity
 
 checkCastleCondition : Bool -> PlayerPiece -> Position -> Int -> Board -> Bool
@@ -162,11 +162,11 @@ getCastleMoves kingPiece kingPosition board =
           Black -> 8
       kingSideCastle =
         if (checkCastleCondition True kingPiece kingPosition rank board) then
-          [ CastleKingSide (Position 7 rank) ]
+          [ Move CastleKingSide (Position 7 rank) ]
         else []
       queenSideCastle =
         if (checkCastleCondition False kingPiece kingPosition rank board) then
-          [ CastleQueenSide (Position 3 rank) ]
+          [ Move CastleQueenSide (Position 3 rank) ]
         else []
     in
       kingSideCastle ++ queenSideCastle
@@ -187,8 +187,8 @@ kingMoves isCastling playerPiece position board =
 
 isCapture : Move -> Bool
 isCapture move =
-  case move of
-    Capture _ ->
+  case .moveType move of
+    Capture ->
       True
     _ ->
       False
@@ -201,9 +201,13 @@ pawnMoves enPassant playerPiece position board =
         White -> 8
         Black -> 1
     toPawnJump move =
-      case move of
-        Goto pos  -> PawnJump pos
-        m         -> m
+      let
+        newMoveType =
+          case .moveType move of
+            Goto -> PawnJump
+            m    -> m
+      in
+        Move newMoveType (.position move)
     captureMoves =
       pieceMoves playerPiece position board (Just 1) [ ne, nw ]
         |> List.filter isCapture
@@ -214,16 +218,16 @@ pawnMoves enPassant playerPiece position board =
         |> List.map promoteAtLastRank
     promoteAtLastRank move =
       let
-        toPosition = getMovePosition move
+        toPosition = .position move
       in
         if .rank toPosition == lastRank then
-          Promotion toPosition
+          Move Promotion toPosition
         else
           move
     pawnJump =
       if not playerPiece.moved then
         forwardMove
-          |> List.map getMovePosition
+          |> List.map .position
           |> List.concatMap (\pos -> pieceMoves playerPiece pos board (Just 1) [ n ])
           |> List.map toPawnJump
         else
@@ -231,7 +235,7 @@ pawnMoves enPassant playerPiece position board =
     enpassantMove =
       case enPassant of
         Just toPosition ->
-          [ Enpassant toPosition ]
+          [ Move Enpassant toPosition ]
         Nothing ->
           []
   in
@@ -268,29 +272,11 @@ getNextMoves player square kingPosition board =
     Nothing ->
       []
 
-getMovePosition : Move -> Position
-getMovePosition move =
-  case move of
-    Capture pos ->
-      pos
-    Goto pos ->
-      pos
-    PawnJump pos ->
-      pos
-    CastleKingSide pos ->
-      pos
-    CastleQueenSide pos ->
-      pos
-    Enpassant pos ->
-      pos
-    Promotion pos ->
-      pos
-
 isKingInAttack : Bool -> Position -> Board -> PlayerPiece -> Bool
 isKingInAttack isCastling kingPosition board playerPiece =
   getPieceMoves isCastling kingPosition board playerPiece
     |> List.filter isCapture
-    |> List.map getMovePosition
+    |> List.map .position
     |> List.map (\pos -> getPiece pos board)
     |> List.map (Maybe.map .piece)
     |> List.map (Maybe.map ((==) playerPiece.piece))
@@ -301,9 +287,9 @@ isKingSafe isCastling playerPiece piecePosition currentKingPosition board nextMo
   let
     kingPosition =
       case playerPiece.piece of
-        K -> getMovePosition nextMove
+        K -> .position nextMove
         _ -> currentKingPosition
-    newBoard = movePiece piecePosition (getMovePosition nextMove) board
+    newBoard = movePiece piecePosition (.position nextMove) board
   in
     [ K, Q, R, N, B, P { enPassant = Nothing } ]
       |> List.map (toPlayerPiece playerPiece.player)
@@ -320,7 +306,7 @@ getBoardViewForNextMoves player playerInfo square board =
       ( \move newBoard ->
           updateSquare
             (\newSquare -> { newSquare | moveToPlay = Just move })
-            (getMovePosition move)
+            (.position move)
             newBoard
       )
       board
@@ -411,21 +397,22 @@ applyMove player fromPosition move playerInfo board =
       case player of
         White -> 1
         Black -> 8
+    toPosition = .position move
     ((newBoard, capturedPiece), command) =
-      case move of
-        Goto toPosition ->
+      case .moveType move of
+        Goto ->
           ( ( movePiece fromPosition toPosition board
             , Nothing
             )
           , Cmd.none
           )
-        Capture toPosition ->
+        Capture ->
           ( ( movePiece fromPosition toPosition board
             , getPiece toPosition board
             )
           , Cmd.none
           )
-        PawnJump toPosition ->
+        PawnJump ->
           ( ( board
                 |> movePiece fromPosition toPosition
                 |> enableEnPassantPawns player toPosition
@@ -433,7 +420,7 @@ applyMove player fromPosition move playerInfo board =
             )
           , Cmd.none
           )
-        CastleKingSide toPosition ->
+        CastleKingSide ->
           ( ( board
                 |> movePiece fromPosition toPosition
                 |> movePiece (Position 8 rank) (Position 6 rank)
@@ -441,7 +428,7 @@ applyMove player fromPosition move playerInfo board =
             )
           , Cmd.none
           )
-        CastleQueenSide toPosition ->
+        CastleQueenSide ->
           ( ( board
                 |> movePiece fromPosition toPosition
                 |> movePiece (Position 1 rank) (Position 4 rank)
@@ -449,7 +436,7 @@ applyMove player fromPosition move playerInfo board =
             )
           , Cmd.none
           )
-        Enpassant toPosition ->
+        Enpassant ->
           let
             capturePosition = Position (.file toPosition) (.rank fromPosition)
           in
@@ -458,7 +445,7 @@ applyMove player fromPosition move playerInfo board =
                 |> removePiece capturePosition
             , Cmd.none
             )
-        Promotion toPosition ->
+        Promotion ->
           ( ( movePiece fromPosition toPosition board
             , getPiece toPosition board
             )
@@ -468,7 +455,6 @@ applyMove player fromPosition move playerInfo board =
               (Task.succeed (PickPromotionPiece toPosition))
           )
     updatedBoard = disableEnPassantPawns player newBoard
-    toPosition = getMovePosition move
     playerPieceMaybe = getPiece toPosition updatedBoard
     kingPosition =
       case playerPieceMaybe of

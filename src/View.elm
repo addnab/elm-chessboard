@@ -8,7 +8,7 @@ import Model exposing (Model)
 import Actions exposing (Action(..))
 import Dict
 import Color exposing (Color)
-import Chess.Types exposing (Square, Board, Rank, Player, Position, PlayerPiece, Move(..), Piece(..))
+import Chess.Types exposing (Square, Board, Rank, Player, Position, PlayerPiece, Move, MoveType(..), Piece(..))
 import Chess.Pieces exposing (getPieceDisplayInfo, toPlayerPiece)
 
 disablePiece : Player -> Maybe PlayerPiece -> Bool
@@ -84,16 +84,16 @@ renderSquare sideLength selectedSquare playerInTurn square =
     highlightColor =
       case square.moveToPlay of
         Just move ->
-          case move of
-            Goto _ ->
+          case .moveType move of
+            Goto ->
               "grey"
-            PawnJump _ ->
+            PawnJump ->
               "grey"
-            Capture _ ->
+            Capture ->
               "red"
-            Enpassant _ ->
+            Enpassant ->
               "red"
-            Promotion _ ->
+            Promotion ->
               "orange"
             _ ->
               "blue"

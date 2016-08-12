@@ -29,14 +29,19 @@ type alias Position =
   , rank : Int
   }
 
-type Move
-  = Capture Position
-  | Goto Position
-  | PawnJump Position
-  | CastleKingSide Position
-  | CastleQueenSide Position
-  | Enpassant Position
-  | Promotion Position
+type MoveType
+  = Capture
+  | Goto
+  | PawnJump
+  | CastleKingSide
+  | CastleQueenSide
+  | Enpassant
+  | Promotion
+
+type alias Move =
+  { moveType : MoveType
+  , position : Position
+  }
 
 type alias Square =
   { piece : Maybe PlayerPiece
