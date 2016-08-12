@@ -229,6 +229,7 @@ pawnMoves enPassant playerPiece position board =
         forwardMove
           |> List.map .position
           |> List.concatMap (\pos -> pieceMoves playerPiece pos board (Just 1) [ n ])
+          |> List.filter (isCapture >> not)
           |> List.map toPawnJump
         else
           []
