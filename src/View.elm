@@ -161,25 +161,24 @@ promotePieceStyle sideLength =
 
 renderPromotePiecePicker : Int -> Player -> Maybe Position -> Html Action
 renderPromotePiecePicker sideLength playerInTurn promote =
-  case promote of
-    Just position ->
-      div [ promotePiecePickerStyle sideLength ]
-        ( List.map
-            (\piece ->
-              let
-                playerPiece = toPlayerPiece playerInTurn piece
-              in
-                div
-                  [ onClick (PromoteToPiece playerPiece position)
-                  , promotePieceStyle sideLength
-                  ]
-                  [ renderPiece sideLength playerInTurn (Just playerPiece)
-                  ]
-            )
-            [ R, N, B, Q ]
-        )
-    Nothing ->
-      div [] []
+  let
+    renderPromotePiece playerPiece position =
+      div
+      [ onClick (PromotePawn playerPiece position)
+      , promotePieceStyle sideLength
+      ]
+      [ renderPiece sideLength playerInTurn (Just playerPiece)
+      ]
+  in
+    case promote of
+      Just position ->
+        div [ promotePiecePickerStyle sideLength ]
+          ( List.map
+              (\piece -> renderPromotePiece (toPlayerPiece playerInTurn piece) position)
+              [ R, N, B, Q ]
+          )
+      Nothing ->
+        div [] []
 
 viewStyle sideLength =
   style

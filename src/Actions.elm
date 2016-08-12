@@ -6,6 +6,6 @@ type Action
   = Reset
   | MovePiece Position Move
   | PickPromotionPiece Position
-  | PromoteToPiece PlayerPiece Position
+  | PromotePawn PlayerPiece Position
   | Select Square
   | Deselect

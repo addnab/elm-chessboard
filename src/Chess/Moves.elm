@@ -391,7 +391,7 @@ disableEnPassantPawns player board =
       |> List.map (\pos -> ( pos, getPiece pos board) )
       |> List.foldr (disableEnPassantPawn player) board
 
-applyMove : Player -> Position -> Move -> PlayerInfo -> Board -> ({ board: Board, capturedPiece: Maybe PlayerPiece, playerInfo: PlayerInfo }, Cmd Action)
+applyMove : Player -> Position -> Move -> PlayerInfo -> Board -> ({ board: Board, capturedPiece: Maybe PlayerPiece, playerInfo: PlayerInfo, promote: Maybe Position })
 applyMove player fromPosition move playerInfo board =
   let
     rank =
@@ -399,61 +399,55 @@ applyMove player fromPosition move playerInfo board =
         White -> 1
         Black -> 8
     toPosition = .position move
-    ((newBoard, capturedPiece), command) =
+    (newBoard, capturedPiece, promote) =
       case .moveType move of
         Goto ->
-          ( ( movePiece fromPosition toPosition board
-            , Nothing
-            )
-          , Cmd.none
+          ( movePiece fromPosition toPosition board
+          , Nothing
+          , Nothing
           )
         Capture ->
-          ( ( movePiece fromPosition toPosition board
-            , getPiece toPosition board
-            )
-          , Cmd.none
+          ( movePiece fromPosition toPosition board
+          , getPiece toPosition board
+          , Nothing
           )
         PawnJump ->
-          ( ( board
-                |> movePiece fromPosition toPosition
-                |> enableEnPassantPawns player toPosition
-            , Nothing
-            )
-          , Cmd.none
+          ( board
+              |> movePiece fromPosition toPosition
+              |> enableEnPassantPawns player toPosition
+          , Nothing
+          , Nothing
           )
         CastleKingSide ->
-          ( ( board
-                |> movePiece fromPosition toPosition
-                |> movePiece (Position 8 rank) (Position 6 rank)
-            , Nothing
-            )
-          , Cmd.none
+          ( board
+              |> movePiece fromPosition toPosition
+              |> movePiece (Position 8 rank) (Position 6 rank)
+          , Nothing
+          , Nothing
           )
         CastleQueenSide ->
-          ( ( board
-                |> movePiece fromPosition toPosition
-                |> movePiece (Position 1 rank) (Position 4 rank)
-            , Nothing
-            )
-          , Cmd.none
+          ( board
+              |> movePiece fromPosition toPosition
+              |> movePiece (Position 1 rank) (Position 4 rank)
+          , Nothing
+          , Nothing
           )
         Enpassant ->
           let
             capturePosition = Position (.file toPosition) (.rank fromPosition)
-          in
-            ( board
+            (boardAfterEnPassant, capturedPawn) =
+              board
                 |> movePiece fromPosition toPosition
                 |> removePiece capturePosition
-            , Cmd.none
+          in
+            ( boardAfterEnPassant
+            , capturedPawn
+            , Nothing
             )
         Promotion ->
-          ( ( movePiece fromPosition toPosition board
-            , getPiece toPosition board
-            )
-          , Task.perform
-              (\_ -> Debug.crash "This failure cannot happen.")
-              identity
-              (Task.succeed (PickPromotionPiece toPosition))
+          ( movePiece fromPosition toPosition board
+          , getPiece toPosition board
+          , Just toPosition
           )
     updatedBoard = disableEnPassantPawns player newBoard
     playerPieceMaybe = getPiece toPosition updatedBoard
@@ -466,12 +460,11 @@ applyMove player fromPosition move playerInfo board =
         Nothing ->
           playerInfo.kingPosition
   in
-    ( { board = updatedBoard
-      , capturedPiece = capturedPiece
-      , playerInfo =
-          { playerInfo
-          | kingPosition = kingPosition
-          }
-      }
-    , command
-    )
+    { board = updatedBoard
+    , capturedPiece = capturedPiece
+    , playerInfo =
+        { playerInfo
+        | kingPosition = kingPosition
+        }
+    , promote = promote
+    }

@@ -6,9 +6,8 @@ import Actions exposing (Action(..))
 
 main : Program Never
 main =
-  App.program
-    { init = (Model.initial, Cmd.none)
+  App.beginnerProgram
+    { model = Model.initial
     , update = Update.update
     , view = View.view
-    , subscriptions = always Sub.none
     }

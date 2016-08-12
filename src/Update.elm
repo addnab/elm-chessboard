@@ -9,71 +9,59 @@ import Chess.Players exposing (opponent, getPlayerInfo, setPlayerInfo)
 
 import Debug
 
-update : Action -> Model -> (Model, Cmd Action)
+update : Action -> Model -> Model
 update action model =
   case model.promote of
     Nothing ->
       case action of
         Select square ->
-          ( { model
-            | boardView =
-                getBoardViewForNextMoves
-                  model.playerInTurn
-                  (getPlayerInfo model.playersInfo model.playerInTurn)
-                  square
-                  model.board
-            , selectedSquare = Just square
-            }
-          , Cmd.none
-          )
+          { model
+          | boardView =
+              getBoardViewForNextMoves
+                model.playerInTurn
+                (getPlayerInfo model.playersInfo model.playerInTurn)
+                square
+                model.board
+          , selectedSquare = Just square
+          }
         Deselect ->
-          ( { model | selectedSquare = Nothing }
-          , Cmd.none
-          )
+          { model | selectedSquare = Nothing }
         MovePiece fromPosition move ->
           let
-            ({ board, capturedPiece, playerInfo }, command) =
+            ({ board, capturedPiece, playerInfo, promote }) =
               applyMove
                 model.playerInTurn
                 fromPosition
                 move
                 (getPlayerInfo model.playersInfo model.playerInTurn)
                 model.board
+            playerInTurn =
+              case promote of
+                Nothing ->
+                  opponent model.playerInTurn
+                _ ->
+                  model.playerInTurn
           in
-            ( { model
-              | board = board
-              , boardView = board
-              , playerInTurn = opponent model.playerInTurn
-              , playersInfo = setPlayerInfo model.playersInfo model.playerInTurn playerInfo
-              }
-            , command
-            )
-        PickPromotionPiece position ->
-          ( { model
-            | promote = Just position
-            , playerInTurn = opponent model.playerInTurn
+            { model
+            | board = board
+            , boardView = board
+            , playerInTurn = playerInTurn
+            , playersInfo = setPlayerInfo model.playersInfo model.playerInTurn playerInfo
+            , promote = promote
             }
-          , Cmd.none
-          )
         _ ->
-          ( model
-          , Cmd.none
-          )
+          model
     Just _ ->
       case action of
-        PromoteToPiece playerPiece position ->
+        PromotePawn playerPiece position ->
           let
             board = setPiece position (model.board, Just playerPiece)
           in
-            ( { model
-              | board = board
-              , boardView = board
-              , playerInTurn = opponent model.playerInTurn
-              , promote = Nothing
-              }
-            , Cmd.none
-            )
+            { model
+            | board = board
+            , boardView = board
+            , playerInTurn = opponent model.playerInTurn
+            , promote = Nothing
+            }
         _ ->
-          ( model
-          , Cmd.none
-          )
+          model
