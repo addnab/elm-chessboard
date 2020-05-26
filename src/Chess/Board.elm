@@ -16,8 +16,8 @@ updateSquare squareModifier position =
 getPiece : Position -> Board -> Maybe PlayerPiece
 getPiece position board =
   (Dict.get position.rank board)
-    `Maybe.andThen` (Dict.get position.file)
-      `Maybe.andThen` .piece
+    |> Maybe.andThen (Dict.get position.file)
+      |>Maybe.andThen .piece
 
 setPiece : Position -> (Board, Maybe PlayerPiece) -> Board
 setPiece position (board, piece) =

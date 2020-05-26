@@ -23,8 +23,8 @@ createSquare rank file piece =
 createRank : Int -> List (Maybe PlayerPiece) -> Rank
 createRank rank pieceOrder =
   pieceOrder
-    |> List.map2 (createSquare rank) [1..8]
-    |> List.map2 (,) [1..8]
+    |> List.map2 (createSquare rank) (List.range 1 8)
+    |> List.map2 (,) (List.range 1 8)
     |> Dict.fromList
 
 emptyRank : Int -> Rank

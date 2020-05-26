@@ -1,12 +1,12 @@
 import Model
 import Update
 import View
-import Html.App as App
+import Html exposing (beginnerProgram)
 import Actions exposing (Action(..))
 
-main : Program Never
+main : Program Never Model.Model Action
 main =
-  App.beginnerProgram
+  beginnerProgram
     { model = Model.initial
     , update = Update.update
     , view = View.view

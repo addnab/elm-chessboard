@@ -1,7 +1,6 @@
 module View exposing (view)
 
 import Html exposing (Html, div, span, text, img)
-import Html.App as App
 import Html.Attributes exposing (style, src, width, height)
 import Html.Events exposing (onClick)
 import Model exposing (Model)

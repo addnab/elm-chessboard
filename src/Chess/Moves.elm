@@ -385,7 +385,7 @@ disableEnPassantPawns player board =
         White -> [ 5, 6 ]
         Black -> [ 3, 4 ]
   in
-    [1..8]
+    List.range 1 8
       |> List.map Position
       |> List.concatMap (\pos -> List.map pos ranks)
       |> List.map (\pos -> ( pos, getPiece pos board) )
