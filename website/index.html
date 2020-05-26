@@ -27,8 +27,9 @@
       </footer>
       <script src="./js/elm-chessboard.js"></script>
       <script>
-          var node = document.getElementById('elm-chessboard-app');
-          var app = Elm.Main.embed(node);
+          var app = Elm.Main.init({
+            node: document.getElementById('elm-chessboard-app')
+          });
       </script>
     </div>
   </body>
