@@ -1,8 +1,8 @@
 # elm-chessboard
 
-[Demo here](http://addnab.com/elm-chessboard)
+[Demo here](https://elm-chessboard-4rsiydksha-uc.a.run.app)
 
-A Chessboard implementation in [elm-lang](http://elm-lang.org/).
+A 2-player Chessboard implementation in [elm-lang](http://elm-lang.org/).
 
 A personal pet project to try out [The Elm Architecture](http://guide.elm-lang.org/architecture/).
 
